@@ -1,5 +1,5 @@
 {
-  "name": "dice",
+  "name": "dice-game",
   "version": "1.0.0",
   "private": true,
   "description": "一款通过投掷骰子进行对战的小游戏",
@@ -10,6 +10,9 @@
   },
   "scripts": {
     "build:weapp": "taro build --type weapp",
+    "build:weapp:preview": "taro preview --type weapp",
+    "build:weapp:upload": "taro upload --type weapp",
+    "build:weapp:upload2": "taro upload --type weapp --projectPath dist/xxx",
     "build:swan": "taro build --type swan",
     "build:alipay": "taro build --type alipay",
     "build:tt": "taro build --type tt",
@@ -26,12 +29,16 @@
     "dev:qq": "npm run build:qq -- --watch",
     "dev:quickapp": "npm run build:quickapp -- --watch"
   },
+  "taroConfig": {
+    "version": "1.0.0",
+    "desc": "CI自动上传"
+  },
   "browserslist": [
     "last 3 versions",
     "Android >= 4.1",
     "ios >= 8"
   ],
-  "author": "",
+  "author": "softeng-underdog",
   "license": "MIT",
   "dependencies": {
     "@babel/runtime": "^7.7.7",
@@ -54,6 +61,7 @@
   "devDependencies": {
     "@babel/core": "^7.8.0",
     "@tarojs/cli": "3.6.16",
+    "@tarojs/plugin-mini-ci": "^3.6.17",
     "@tarojs/taro-loader": "3.6.16",
     "@tarojs/webpack5-runner": "3.6.16",
     "@types/node": "^18.15.11",
