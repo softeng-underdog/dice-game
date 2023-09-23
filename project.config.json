@@ -1,6 +1,6 @@
 {
   "miniprogramRoot": "dist/",
-  "projectname": "dice",
+  "projectname": "dice-game",
   "description": "一款通过投掷骰子进行对战的小游戏",
   "appid": "wxa3f87d526d949c5d",
   "setting": {

@@ -1,3 +1,15 @@
+/**
+ * @typedef { import("@tarojs/plugin-mini-ci").CIOptions } CIOptions
+ * @type {CIOptions}
+ */
+
+const CIPluginOpt = {
+  weapp: {
+    appid: 'wxa3f87d526d949c5d',
+    privateKeyPath: 'private.app.key'
+  }
+}
+
 const config = {
   projectName: 'dice-game',
   date: '2023-9-19',
@@ -9,7 +21,7 @@ const config = {
   },
   sourceRoot: 'src',
   outputRoot: 'dist',
-  plugins: [],
+  plugins: [['@tarojs/plugin-mini-ci', CIPluginOpt]],
   defineConstants: {
   },
   copy: {
