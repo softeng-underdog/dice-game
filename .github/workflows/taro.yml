@@ -1,0 +1,32 @@
+
+name: Taro MP CI
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - name: Install Dependencies
+      run: npm i
+    - name: Generate private key for upload
+      run: echo "$MINIAPP_UPLOAD_KEY" > private.app.key
+      env:
+        MINIAPP_UPLOAD_KEY: ${{ secrets.MINIAPP_UPLOAD_KEY }}
+    - name: Build and upload to WeChat
+      run: npm run build:weapp:preview
