@@ -2,7 +2,7 @@
 name: Bug报告
 about: 创建报告以帮助改善小游戏
 title: "[BUG] xxx"
-labels: bug, question
+labels: bug
 assignees: ''
 
 ---
