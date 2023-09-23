@@ -1,6 +1,6 @@
 # 有轮无回小游戏
 
-![commits](https://img.shields.io/github/commit-activity/t/softeng-underdog/dice-game) ![issues](https://img.shields.io/github/issues/softeng-underdog/dice-game) ![license](https://img.shields.io/badge/License-MIT-green?link=https%3A%2F%2Fopensource.org%2Flicense%2Fmit%2F)
+![commits](https://img.shields.io/github/commit-activity/t/softeng-underdog/dice-game) ![issues](https://img.shields.io/github/issues/softeng-underdog/dice-game) ![license](https://img.shields.io/badge/License-MIT-green?link=https%3A%2F%2Fopensource.org%2Flicense%2Fmit%2F) ![ci badge](https://github.com/softeng-underdog/dice-game/actions/workflows/taro.yml/badge.svg)
 
 有轮无回是一款通过投掷骰子来进行对战的小游戏，玩家通过骰子的特定组合以及点数之和赢得分数，从而与对手一较高下，其玩法类似于快艇骰子。
 
