@@ -24,9 +24,11 @@ jobs:
         cache: 'npm'
     - name: Install Dependencies
       run: npm i
+    - name: Build miniprogram
+      run: npm run build:weapp
     - name: Generate private key for upload
       run: echo "$MINIAPP_UPLOAD_KEY" > private.app.key
       env:
         MINIAPP_UPLOAD_KEY: ${{ secrets.MINIAPP_UPLOAD_KEY }}
-    - name: Build and upload to WeChat
+    - name: Upload to WeChat
       run: npm run build:weapp:preview
