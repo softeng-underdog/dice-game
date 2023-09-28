@@ -1,0 +1,17 @@
+
+.logo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+.logo-img { width: 100%; }
+
+.btn-area {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 200px;
+}
+
+.start-btn { background-color: #CE3F3F; }
