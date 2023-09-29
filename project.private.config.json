@@ -9,7 +9,7 @@
       "list": [
         {
           "name": "自定义页面",
-          "pathName": "pages/home/home",
+          "pathName": "pages/rule-p1/rule-p1",
           "query": "",
           "launchMode": "default",
           "scene": null

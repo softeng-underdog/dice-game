@@ -1,0 +1,20 @@
+.page-title { margin: 50px 0; }
+
+.rule-text {
+    margin: 20px 25px;
+    color: white;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.rule-last { flex-grow: 1; }
+
+.navigator-back {
+    width: 150px;
+    height: 50px;
+}
+
+.navigator-bonus-rule {
+    width: 400px;
+    height: 50px;
+}

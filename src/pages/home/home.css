@@ -1,1 +1,21 @@
 
+.logo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.logo-img { width: 50%; }
+
+.menu-btns {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 150px;
+}
+
+.menu-btn {
+    margin-bottom: 30px;
+}
