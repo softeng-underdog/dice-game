@@ -14,14 +14,17 @@
     <text class="rule-text">
       ·  前两轮每轮投掷结束并在所有玩家锁定骰子后，每位玩家可以选择增加倍率：0，1，2，3。选择完成后进入下一轮
     </text>
-    <text class="rule-text rule-last">
+    <text class="rule-text">
       ·  第三轮投掷结束后，所有玩家的全部骰子自动锁定并进行计分（得分为五个骰子的点数总和+奖励分），得出最终结果，筹码划分
     </text>
+    <view class="flex-fill" />
     <view class="navigator-area">
-      <navigator url="/pages/home/home">
+      <navigator open-type="navigateBack">
         <image class="navigator-back" src="../../images/navigator-btn/back-btn.svg" />
       </navigator>
-      <image class="navigator-bonus-rule" src="../../images/navigator-btn/bonus-rule-btn.svg" />
+      <navigator url="/pages/rule-p2/rule-p2">
+        <image class="navigator-bonus-rule" src="../../images/navigator-btn/bonus-rule-btn.svg" />
+      </navigator>
     </view>
   </view>
 </template>
