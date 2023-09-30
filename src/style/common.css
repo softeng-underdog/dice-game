@@ -6,6 +6,8 @@
     padding: 0 27px;
 }
 
+.page-title { margin: 50px 0; }
+
 .menu-btn-border {
     border: 10px solid black;
     border-radius: 500px;
