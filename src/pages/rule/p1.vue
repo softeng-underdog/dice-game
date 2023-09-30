@@ -22,7 +22,7 @@
       <navigator open-type="navigateBack">
         <image class="navigator-back" src="../../images/navigator-btn/back-btn.svg" />
       </navigator>
-      <navigator url="/pages/rule-p2/rule-p2">
+      <navigator url="/pages/rule/p2">
         <image class="navigator-bonus-rule" src="../../images/navigator-btn/bonus-rule-btn.svg" />
       </navigator>
     </view>
@@ -33,5 +33,5 @@
 import userBar from '../../components/common/user-bar.vue'
 import menuItemText from '../../components/common/menu-item-text.vue'
 import '../../style/common.css'
-import './rule-p1.css'
+import './p1.css'
 </script>

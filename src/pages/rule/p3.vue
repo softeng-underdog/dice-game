@@ -27,5 +27,5 @@
 import userBar from '../../components/common/user-bar.vue'
 import menuItemText from '../../components/common/menu-item-text.vue'
 import '../../style/common.css'
-import './rule-p3.css'
+import './p3.css'
 </script>
