@@ -62,8 +62,19 @@ class GameData {
      */
     initMatch(games, playerChips, playerDescriptors) {
         this.games = games;
-        this.playerChips = playerChips;
-        this.playerDescriptors = playerDescriptors;
+        let length = playerDescriptors.length;
+        for(let i = 0;i < length;i ++){
+            let playerdata = {
+                id : playerDescriptors[i].id,
+                name : playerDescriptors[i].name,
+                avatar : playerDescriptors[i].avatar,
+                isCPU : playerDescriptors[i].isCPU,
+                diceData : [0,0,0,0,0],
+                diceLockedBitmap : 0,
+                chips : playerChips
+            };
+            this.playerData.push(playerdata);
+        }
     }
 
     /**
