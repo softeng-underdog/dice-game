@@ -1,0 +1,38 @@
+
+.field-view {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+}
+
+.field-label {
+    font-size: 2.2em;
+    font-weight: 900;
+    -webkit-text-stroke: 3px black;
+    color: white;
+
+    text-align: center;
+}
+
+.field-box {
+    display: flex;
+    align-items: center;
+    width: 300px;
+}
+
+.field-input {
+    flex-grow: 1;
+    border-bottom: 1px solid white;
+    margin: 0 20px;
+    text-align: center;
+    color: white;
+    height: 1.1em;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.field-btn {
+    width: 200px;
+    height: 90px;
+}

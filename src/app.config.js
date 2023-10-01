@@ -6,6 +6,8 @@ export default {
     'pages/rule/p2',
     'pages/rule/p3',
     'pages/about/about',
+    'pages/offline-config/config',
+    'pages/online-config/config'
   ],
   window: {
     backgroundTextStyle: 'light',
