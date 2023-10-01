@@ -17,7 +17,7 @@
  * @property {string} avatar 玩家头像
  * @property {boolean} isCPU 是否是AI玩家
  * @property {number[]} diceData 当前骰子数据
- * @property {number} diceLockedBitmap 骰子锁定状态位图,1为活动，0为锁定
+ * @property {number} diceLockedBitmap 骰子锁定状态位图,0为活动，1为锁定
  * @property {number} chips 筹码数
  */
 
