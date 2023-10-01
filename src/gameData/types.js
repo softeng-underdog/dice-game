@@ -6,6 +6,7 @@
  * @typedef PlayerDescriptor 玩家描述符
  * @property {number} id 玩家ID
  * @property {string} name 玩家名称
+ * @property {string} avatar 玩家头像
  * @property {boolean} isCPU 是否是AI玩家
  */
 
@@ -13,9 +14,10 @@
  * @typedef PlayerData 玩家游戏数据
  * @property {number} id 玩家ID
  * @property {string} name 玩家名称
+ * @property {string} avatar 玩家头像
  * @property {boolean} isCPU 是否是AI玩家
  * @property {number[]} diceData 当前骰子数据
- * @property {number} diceLockedBitmap 骰子锁定状态位图
+ * @property {number} diceLockedBitmap 骰子锁定状态位图,1为活动，0为锁定
  * @property {number} chips 筹码数
  */
 
@@ -38,10 +40,10 @@
 
 /**
  * @typedef AllocateInfo 筹码分配结果信息
- * @property {number} topPlayerIndex 分数最高玩家的数据索引
- * @property {PlayerData} topPlayerData 分数最高玩家分配之前的游戏数据
- * @property {number[]} chipDifference 从每个玩家手中赢得的的筹码数，自身索引的筹码数固定为0
- * @property {number?} knockoutPlayerIndex 击飞玩家的数据索引，若为null则说明无人被击飞
+ * @property {number[]} topPlayerIndex 分数最高玩家的数据索引
+ * @property {PlayerData[]} topPlayerData 分数最高玩家分配之前的游戏数据
+ * @property {number[]} chipDifference 从每个玩家手中赢得的的筹码数，分数最高的玩家数据索引的筹码数固定为0
+ * @property {number[]?} knockoutPlayerIndex 击飞玩家的数据索引，若为null则说明无人被击飞
  */
 
 /**
@@ -49,7 +51,7 @@
  * @readonly
  * @enum {number}
  */
-const BonusType = {
+export const BonusType = {
     /** 无奖励分 */
     NONE: 0,
     /** 双对 */
@@ -68,6 +70,4 @@ const BonusType = {
     BIG_STRAIGHT: 7
 }
 
-export default {
-    BonusType
-}
+
