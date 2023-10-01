@@ -1,8 +1,8 @@
 <template>
-    <view class="user-bar" :style="statusBarMargin">
-        <image class="user-avatar" :style="avatarSize" src="../../images/user.png"></image>
-        <text class="user-nickname">Hello! Loser</text>
-    </view>
+  <view class="user-bar" :style="statusBarMargin">
+    <image class="user-avatar" :style="avatarSize" src="../../images/user.png"></image>
+    <text class="user-nickname">Hello! Loser</text>
+  </view>
 </template>
 
 <script setup>
@@ -18,7 +18,7 @@ const statusBarMargin = ref({
   height: `${barHeight}px`
 })
 const avatarSize = ref({
-    width: `${barHeight}px`,
-    height: `${barHeight}px`
+  width: `${barHeight}px`,
+  height: `${barHeight}px`
 })
 </script>
