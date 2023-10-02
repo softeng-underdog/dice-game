@@ -7,7 +7,8 @@ export default {
     'pages/rule/p3',
     'pages/about/about',
     'pages/offline-config/config',
-    'pages/online-config/config'
+    'pages/online-config/config',
+    'pages/game/game'
   ],
   window: {
     backgroundTextStyle: 'light',

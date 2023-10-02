@@ -9,7 +9,7 @@
       "list": [
         {
           "name": "自定义页面",
-          "pathName": "pages/offline-config/config",
+          "pathName": "pages/game/game",
           "query": "",
           "launchMode": "default",
           "scene": null

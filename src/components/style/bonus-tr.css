@@ -1,0 +1,26 @@
+
+.bonus-name {
+    width: 50%;
+    color: #676565;
+    background-color: #FAF4E4;
+    border: 5px dashed #676565;
+    border-right: none;
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
+    padding: 5px 0;
+}
+
+.bonus-score {
+    width: 50%;
+    color: rgba(250, 244, 228, 0.1);
+    background-color: #676565;
+    border: 5px dashed #FAF4E4;
+    border-left: none;
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
+    padding: 5px 0;
+}
+
+.bonus-achieved { color: #FAF4E4; }

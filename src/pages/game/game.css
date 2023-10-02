@@ -1,0 +1,134 @@
+.page-game {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    background: linear-gradient(white, #FFD29C);
+}
+
+.game-info {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #D63838;
+    height: 120px;
+}
+
+.game-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+}
+
+.return-btn {
+    width: 45px;
+    height: 45px;
+    margin-right: 15px;
+}
+
+.return-avatar-group {
+    display: flex;
+    align-items: center;
+}
+
+.multiplier-text {
+    color: white;
+    font-size: 1.5em;
+    font-weight: bold;
+    background: linear-gradient(#FFB800, #D63838);
+    border-radius: 500px;
+    padding: 20px;
+}
+
+.games-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.games-text {
+    color: white;
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+.game-area { margin: 0 70px 0 70px; }
+
+.action-area {
+    display: flex;
+    flex-direction: column;
+    margin: 0 70px 0 70px;
+    align-items: center;
+}
+
+.action-common-area {
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.auto-area {
+    display: flex;
+    margin: 0 70px 0 70px;
+    justify-content: flex-end;
+}
+
+.free-area {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #FFA318;
+    height: 120px;
+    border: 5px solid black;
+    border-bottom: none;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    padding: 0 5px;
+}
+
+.lock-area {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-image: url(../../images/game-control/lock-bkg.svg);
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-color: #FFA318;
+    height: 120px;
+    border: 5px solid black;
+    border-top: none;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    padding: 0 5px;
+}
+
+.game-dice {
+    width: 100px;
+    height: 100px;
+}
+
+.auto-btn {
+    border-radius: 50px;
+    background-color: #FFA318;
+    padding: 5px 30px;
+    font-size: 1em;
+    font-weight: bold;
+    align-self: flex-end;
+}
+
+.game-btn {
+    border-radius: 50px;
+    background-color: #FFA318;
+    padding: 10px 40px;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.svg-btn {
+    width: 35px;
+    height: 35px;
+    background-color: #FFA318;
+    border-radius: 50px;
+    padding: 10px;
+}
