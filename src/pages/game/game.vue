@@ -1,16 +1,17 @@
 <template>
   <view class="page-game">
-      <view class="game-info">
-        <view class="return-avatar-group">
-          <image class="return-btn" src="../../images/game-control/return-btn.svg" />
-          <image class="game-avatar" src="../../images/user.png" />
-        </view>
-        <text class="multiplier-text">当前倍率 : 5</text>
-        <view class="games-group">
-          <text class="games-text">局数</text>
-          <text class="games-text">1/12</text>
-        </view>
+    <view class="game-info">
+      <view class="return-avatar-group">
+        <image class="return-btn" src="../../images/game-control/return-btn.svg" />
+        <image class="game-avatar" src="../../images/user.png" @tap="togglePlayerView" />
       </view>
+      <text class="multiplier-text">当前倍率 : 5</text>
+      <view class="games-group">
+        <text class="games-text">局数</text>
+        <text class="games-text">1/12</text>
+      </view>
+    </view>
+    <view v-if="!showPlayerView" class="game-view">
       <view class="game-area">
         <view class="free-area">
           <image class="game-dice" src="../../images/game-dices/one-dice.svg" />
@@ -47,6 +48,18 @@
         </view>
         <text v-if="!auto" class="auto-btn">托管</text>
       </view>
+    </view>
+
+    <view v-else class="player-view">
+      <player-card class="player-card-margin" name="WinTP" avatar="../../images/user.png" :chips="500" :score="123" :dice-data="[1, 2, 3, 4, 5]" top-player />
+      <player-card class="player-card-margin" name="Blossom的那一束阳光" avatar="../../images/user.png" :chips="2010" :score="135" :dice-data="[1, 2, 2, 6, 6]" />
+      <player-card class="player-card-margin" name="Blossom的那一束阳光" avatar="../../images/user.png" :chips="2010" :score="135" :dice-data="[1, 2, 2, 6, 6]" />
+      <player-card class="player-card-margin" name="Blossom的那一束阳光" avatar="../../images/user.png" :chips="2010" :score="135" :dice-data="[1, 2, 2, 6, 6]" />
+      <player-card class="player-card-margin" name="Blossom的那一束阳光" avatar="../../images/user.png" :chips="2010" :score="135" :dice-data="[1, 2, 2, 6, 6]" />
+      <player-card class="player-card-margin" name="Blossom的那一束阳光" avatar="../../images/user.png" :chips="2010" :score="135" :dice-data="[1, 2, 2, 6, 6]" />
+      <player-card class="player-card-margin" name="Blossom的那一束阳光" avatar="../../images/user.png" :chips="2010" :score="135" :dice-data="[1, 2, 2, 6, 6]" />
+      <player-card class="player-card-margin" name="Blossom的那一束阳光" avatar="../../images/user.png" :chips="2010" :score="135" :dice-data="[1, 2, 2, 6, 6]" />
+    </view>
   </view>
 </template>
 
@@ -56,6 +69,7 @@ import { useLoad } from '@tarojs/taro'
 import { ref, computed } from 'vue'
 import bonusTr from '../../components/game/bonus-tr.vue'
 import totalTr from '../../components/game/total-tr.vue'
+import playerCard from '../../components/game/player-card.vue'
 import '../../style/common.css'
 import './game.css'
 
@@ -71,6 +85,12 @@ const incMultiplier = () => {
 const decMultiplier = () => {
   actionMultiplier.value = Math.max(actionMultiplier.value - 1, 0);
 }
+
+const togglePlayerView = () => {
+  showPlayerView.value = !showPlayerView.value
+}
+
+let showPlayerView = ref(true)
 
 let auto = ref(false)
 let lock = ref(true)
