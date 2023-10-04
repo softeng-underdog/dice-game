@@ -36,3 +36,8 @@
     font-size: 1em;
     font-weight: bold;
 }
+
+.card-dice {
+    width: 90px;
+    height: 90px;
+}

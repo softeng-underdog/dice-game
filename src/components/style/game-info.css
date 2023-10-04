@@ -1,0 +1,49 @@
+
+.game-info {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #D63838;
+    height: 120px;
+}
+
+.return-avatar-group {
+    display: flex;
+    align-items: center;
+}
+
+.game-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+}
+
+.return-btn {
+    width: 45px;
+    height: 45px;
+    margin-right: 15px;
+}
+
+.multiplier-text {
+    color: white;
+    font-size: 1.5em;
+    font-weight: bold;
+    background: linear-gradient(#FFB800, #D63838);
+    border-radius: 500px;
+    padding: 20px;
+}
+
+.games-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.games-text {
+    color: white;
+    font-size: 1.3em;
+    font-weight: bold;
+}

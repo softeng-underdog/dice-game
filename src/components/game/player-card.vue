@@ -10,12 +10,13 @@
     </view>
     <text class="card-row card-text">{{ props.name }}</text>
     <view class="flex card-row dice-row">
-      <image v-for="dice of props.diceData" :key="globalStore.getGlobalKey(dice)" class="dice-svg" :src="globalStore.diceSvgTable[dice]" />
+      <image-dice v-for="dice of props.diceData" :key="globalStore.getGlobalKey(dice)" class="card-dice" :dice="dice" />
     </view>
   </view>
 </template>
 
 <script setup>
+import imageDice from './image-dice.vue';
 import { useGlobalStore } from '../../stores/global'
 import '../../style/common.css'
 import '../style/player-card.css'
