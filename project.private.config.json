@@ -3,5 +3,18 @@
   "projectname": "dice-game",
   "setting": {
     "compileHotReLoad": true
+  },
+  "condition": {
+    "miniprogram": {
+      "list": [
+        {
+          "name": "自定义页面",
+          "pathName": "pages/game/rank",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        }
+      ]
+    }
   }
 }

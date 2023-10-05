@@ -1,0 +1,20 @@
+
+.total-name {
+    width: 50%;
+    background-color: #303240;
+    color: white;
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
+    padding: 5px 0;
+}
+
+.total-score {
+    width: 50%;
+    background-color: #B1AFA6;
+    color: white;
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
+    padding: 5px 0;
+}

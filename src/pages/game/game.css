@@ -1,0 +1,121 @@
+.page-game {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.game-view {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    background: linear-gradient(white, #FFD29C);
+}
+
+.player-view {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 50px 100px 50px;
+    background: linear-gradient(white, #FFD29C);
+}
+
+.end-view {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(white, #FFD29C);
+}
+
+.end-view-text {
+    color: red;
+    font-size: 1.7em;
+    font-weight: bold;
+    margin: 30px 0;
+    text-align: center;
+}
+
+.game-area { margin: 0 70px 0 70px; }
+
+.action-area {
+    display: flex;
+    flex-direction: column;
+    margin: 0 70px 0 70px;
+    align-items: center;
+}
+
+.action-common-area {
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.auto-area {
+    display: flex;
+    margin: 0 70px 0 70px;
+    justify-content: flex-end;
+}
+
+.free-area {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #FFA318;
+    height: 120px;
+    border: 5px solid black;
+    border-bottom: none;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    padding: 0 5px;
+}
+
+.lock-area {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-image: url(../../images/game-control/lock-bkg.svg);
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-color: #FFA318;
+    height: 120px;
+    border: 5px solid black;
+    border-top: none;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    padding: 0 5px;
+}
+
+.game-dice {
+    width: 100px;
+    height: 100px;
+}
+
+.auto-btn {
+    border-radius: 50px;
+    background-color: #FFA318;
+    padding: 5px 30px;
+    font-size: 1em;
+    font-weight: bold;
+    align-self: flex-end;
+}
+
+.game-btn {
+    border-radius: 50px;
+    background-color: #FFA318;
+    padding: 10px 40px;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.svg-btn {
+    width: 35px;
+    height: 35px;
+    background-color: #FFA318;
+    border-radius: 50px;
+    padding: 10px;
+}
+
+.player-card-margin { margin-top: 10px; }

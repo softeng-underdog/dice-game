@@ -1,0 +1,40 @@
+
+.player-card {
+    background-color: #FFCA42;
+    padding: 5px 0;
+}
+
+.card-row {
+    margin-left: 50px;
+    margin-right: 40px;
+}
+
+.dice-row { justify-content: space-between; }
+
+.score-group {
+    flex-direction: column;
+    margin-left: 40px;
+}
+
+.player-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+}
+
+.player-trophy {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    margin-top: 18px;
+}
+
+.card-text {
+    font-size: 1em;
+    font-weight: bold;
+}
+
+.card-dice {
+    width: 90px;
+    height: 90px;
+}

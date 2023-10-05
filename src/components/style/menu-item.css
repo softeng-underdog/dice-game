@@ -1,0 +1,13 @@
+
+.menu-item-view {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.menu-item-icon {
+    width: 150px;
+    height: 150px;
+    margin-right: 30px;
+}

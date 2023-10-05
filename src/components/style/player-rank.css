@@ -1,0 +1,35 @@
+
+.player-rank { margin: 0 70px; }
+
+.rank-group {
+    display: flex;
+    align-items: center;
+}
+
+.rank-trophy {
+    width: 120px;
+    height: 120px;
+}
+
+.rank-title {
+    font-size: 1.6em;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.rank-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.rank-data {
+    background-color: #FFA318;
+    padding: 10px 20px;
+}
+
+.rank-text {
+    font-size: 1.1em;
+    font-weight: bold;
+}

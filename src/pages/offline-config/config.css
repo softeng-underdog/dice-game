@@ -1,0 +1,19 @@
+
+
+
+.navigator-back {
+    width: 150px;
+    height: 50px;
+}
+
+.config-area {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.start-btn {
+    margin-top: 50px;
+    background-color: #F8DD46;
+}

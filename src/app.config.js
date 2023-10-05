@@ -1,6 +1,15 @@
 export default {
   pages: [
-    'pages/index/index'
+    'pages/index/index',
+    'pages/home/home',
+    'pages/rule/p1',
+    'pages/rule/p2',
+    'pages/rule/p3',
+    'pages/about/about',
+    'pages/offline-config/config',
+    'pages/online-config/config',
+    'pages/game/game',
+    'pages/game/rank'
   ],
   window: {
     backgroundTextStyle: 'light',

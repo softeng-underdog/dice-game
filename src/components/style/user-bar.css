@@ -1,0 +1,9 @@
+
+.user-bar {
+    display: flex;
+    align-items: center;
+}
+
+.user-avatar { border-radius: 50%; }
+
+.user-nickname { margin-left: 30px; }

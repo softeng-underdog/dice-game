@@ -3,15 +3,19 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     flex-grow: 1;
 }
 
-.logo-img { width: 100%; }
+.logo-img { width: 50%; }
 
-.btn-area {
+.menu-btns {
     display: flex;
+    flex-direction: column;
     justify-content: center;
-    margin-bottom: 200px;
+    margin-bottom: 150px;
 }
 
-.start-btn { background-color: #CE3F3F; }
+.menu-btn {
+    margin-bottom: 30px;
+}
