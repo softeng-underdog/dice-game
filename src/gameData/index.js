@@ -149,38 +149,27 @@ class GameData {
         for(let i = 0;i < 5;i ++){
             diceTypeNum[this.playerData[playerIndex].diceData[i]] += 1;
         }
-        let sum = 0;//用于判断是否大顺子
+        let sum1 = 0;//用于判断是否大顺子
         for(let i = 1;i < 6;i ++){
             if(diceTypeNum[i] == 1){
-                sum ++;
+                sum1 ++;
                 continue;
             }
             else {
                 break;
             }
         }
-        if(sum == 5){//大顺子1
-            bonustype = dataTypes.BonusType.BIG_STRAIGHT;
-            bonusscore = 60;
-            totalscore = bonusscore + dicescore;
-            return {
-                bonusType : bonustype,
-                bonusScore : bonusscore,
-                diceScore : dicescore,
-                totalScore : totalscore
-            };
-        }
-        sum = 0;//用于判断是否大顺子
+        let sum2 = 0;//用于判断是否大顺子
         for(let i = 2;i < 7;i ++){
             if(diceTypeNum[i] == 1){
-                sum ++;
+                sum2 ++;
                 continue;
             }
             else {
                 break;
             }
         }
-        if(sum == 5){//大顺子2
+        if(sum1 == 5 || sum2 == 5){//满足其一
             bonustype = dataTypes.BonusType.BIG_STRAIGHT;
             bonusscore = 60;
             totalscore = bonusscore + dicescore;
@@ -271,19 +260,24 @@ class GameData {
      */
     finishGame() {
         let num = 0;
-        let maxScore = this.playerData[0].ScoreInfo[totalScore];
+        let length = this.playerData.length;
+        let totalscore = [];//储存每位玩家的分数情况
+        for(let i = 0;i < length;i++){
+            let scoreinfo = this.getPlayerScoreInfo(i);
+            totalscore.push(scoreinfo);
+        }
+        let maxScore = totalscore[0].totalScore;
         let topPlayerIndex = [];
         let topPlayerData = [];
         let chipDifference = [];
         let knockoutPlayerIndex = [];
-        let length = this.playerData.length;
         for(let i = 1;i < length;i ++){//寻找最高分
-            if(this.playerData[i].ScoreInfo[totalScore] > max){
-                max = this.playerData[i].ScoreInfo[totalScore];
+            if(totalscore[i].totalScore > maxScore){
+                maxScore = totalscore[i].totalScore;
             }
         }
         for(let i = 0;i < length;i ++){//是否有重复的
-            if(this.playerData[i].ScoreInfo[totalScore] == maxScore){//将所有分数为最高分的都加入数组
+            if(totalscore[i].totalScore == maxScore){//将所有分数为最高分的都加入数组
                 topPlayerIndex[num] = i;
                 topPlayerData[num] = this.playerData[i];
                 num ++;
@@ -292,7 +286,7 @@ class GameData {
 
         num = 0;//被击飞玩家数量
         for(let i = 0;i < 5;i++){//获取最高分玩家从每个玩家手中赢得的的筹码数
-            chipDifference[i] = (this.playerData[topPlayerIndex[0]].ScoreInfo[totalScore]-this.playerData[i].ScoreInfo[totalScore]) * this.multiplier;
+            chipDifference[i] = (maxScore-totalscore[i].totalScore) * this.multiplier;
             if((this.playerData[i].chips - chipDifference[i]) <= 0){//如果被击飞
                 knockoutPlayerIndex[num] = i;
                 num ++;
@@ -332,12 +326,12 @@ class GameData {
         }
         else {
             for(let i = 0;i < 5;i++){
-                if((this.playerData[playerIndex].diceLockedBitmap & (1 << i)) !== 0){//未锁定状态
+                if((this.playerData[playerIndex].diceLockedBitmap & (1 << i)) == 0){//未锁定状态
                     this.playerData[playerIndex].diceData[i] = Math.round(Math.random()*5+1);
-                    this.playerData[playerIndex].diceData.sort();
                 }
             }
         }
+        this.playerData[playerIndex].diceData.sort();
         return this.playerData[playerIndex].diceData;
     }
 
@@ -365,7 +359,7 @@ class GameData {
         if(playerIndex == -1){
             playerIndex = this.currentPlayerIndex;
         }
-        return ((this.playerData[playerIndex].diceLockedBitmap & (1 << index)) !== 0);//若该位为1
+        return ((this.playerData[playerIndex].diceLockedBitmap & (1 << index)) !== 0);//该位为1返回true，否则返回false
     }
 
     /**
