@@ -18,5 +18,9 @@ import userBar from '../../components/common/user-bar.vue'
 import menuItemNavigator from '../../components/common/menu-item-navigator.vue'
 import '../../style/common.css'
 import './home.css'
+import '../../images/menu-dices/offline-dice.svg'
+import '../../images/menu-dices/online-dice.svg'
+import '../../images/menu-dices/rule-dice.svg'
+import '../../images/menu-dices/about-dice.svg'
 
 </script>
