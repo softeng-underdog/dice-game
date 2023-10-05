@@ -1,5 +1,5 @@
 <template>
-  <view class="flex player-card">
+  <view class="box-border player-card">
     <image v-show="props.topPlayer" class="player-trophy" src="../../images/game-control/trophy.svg" />
     <view class="flex card-row">
       <image class="player-avatar" :src="avatar" />

@@ -56,6 +56,11 @@
       <image src="../../images/knockout.svg" />
       <text class="end-view-text">击飞！</text>
     </view>
+
+    <view v-if="viewSelector == 3" class="end-view">
+      <image src="../../images/gameover.svg" />
+      <text class="end-view-text">游戏结束</text>
+    </view>
   </view>
 </template>
 
@@ -88,7 +93,7 @@ const togglePlayerView = () => {
   viewSelector.value = viewSelector.value == 0 ? 1 : 0
 }
 
-let viewSelector = ref(0)
+let viewSelector = ref(3)
 
 let auto = ref(false)
 let lock = ref(true)

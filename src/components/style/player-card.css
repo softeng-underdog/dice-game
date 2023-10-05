@@ -1,8 +1,5 @@
 
 .player-card {
-    flex-direction: column;
-    border: 5px solid black;
-    border-radius: 20px;
     background-color: #FFCA42;
     padding: 5px 0;
 }

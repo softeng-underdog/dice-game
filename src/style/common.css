@@ -43,3 +43,10 @@
     align-self: center;
     height: 100px;
 }
+
+.box-border {
+    display: flex;
+    flex-direction: column;
+    border: 5px solid black;
+    border-radius: 20px;
+}

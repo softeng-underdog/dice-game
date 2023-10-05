@@ -8,7 +8,8 @@ export default {
     'pages/about/about',
     'pages/offline-config/config',
     'pages/online-config/config',
-    'pages/game/game'
+    'pages/game/game',
+    'pages/game/rank'
   ],
   window: {
     backgroundTextStyle: 'light',
