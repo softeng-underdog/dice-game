@@ -259,7 +259,6 @@ class GameData {
      * @returns {dataTypes.AllocateInfo} 筹码分配结果
      */
     finishGame() {
-        let num = 0;
         let length = this.playerData.length;
         let totalscore = [];//储存每位玩家的分数情况
         for(let i = 0;i < length;i++){
@@ -271,6 +270,7 @@ class GameData {
         let topPlayerData = [];
         let chipDifference = [];
         let knockoutPlayerIndex = [];
+        let getchips = 0;//最高分玩家赢得的筹码数
         for(let i = 1;i < length;i ++){//寻找最高分
             if(totalscore[i].totalScore > maxScore){
                 maxScore = totalscore[i].totalScore;
@@ -278,18 +278,24 @@ class GameData {
         }
         for(let i = 0;i < length;i ++){//是否有重复的
             if(totalscore[i].totalScore == maxScore){//将所有分数为最高分的都加入数组
-                topPlayerIndex[num] = i;
-                topPlayerData[num] = this.playerData[i];
+                topPlayerIndex.push(i);
+                topPlayerData.push(this.playerData[i]);
                 num ++;
             }
         }
 
-        num = 0;//被击飞玩家数量
-        for(let i = 0;i < 5;i++){//获取最高分玩家从每个玩家手中赢得的的筹码数
-            chipDifference[i] = (maxScore-totalscore[i].totalScore) * this.multiplier;
-            if((this.playerData[i].chips - chipDifference[i]) <= 0){//如果被击飞
-                knockoutPlayerIndex[num] = i;
-                num ++;
+        for(let i = 0;i < length;i++){//获取最高分玩家从每个玩家手中赢得的的筹码数、被击飞玩家索引，扣除其他玩家的筹码
+            chipDifference.push((maxScore-totalscore[i].totalScore) * this.multiplier);
+            getchips += chipDifference[i];
+            this.playerData[i].chips -= chipDifference[i];
+            if((this.playerData[i].chips) <= 0){//如果被击飞
+                knockoutPlayerIndex.push(i);
+            }
+        }
+
+        for(let i = 0;i < length;i++){//给最高分玩家加上赢得的筹码
+            if(totalscore[i].totalScore == maxScore){
+                this.playerData[i].chips += getchips;
             }
         }
 
