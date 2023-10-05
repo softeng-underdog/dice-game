@@ -43,7 +43,7 @@
  * @property {number[]} topPlayerIndex 分数最高玩家的数据索引
  * @property {PlayerData[]} topPlayerData 分数最高玩家分配之前的游戏数据
  * @property {number[]} chipDifference 从每个玩家手中赢得的的筹码数，分数最高的玩家数据索引的筹码数固定为0
- * @property {number[]?} knockoutPlayerIndex 击飞玩家的数据索引，若为null则说明无人被击飞
+ * @property {number[]} knockoutPlayerIndex 击飞玩家的数据索引，若为空数组则说明无人被击飞
  */
 
 /**
