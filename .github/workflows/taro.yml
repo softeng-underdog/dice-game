@@ -6,7 +6,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  build-upload:
 
     runs-on: ubuntu-latest
 
@@ -24,6 +24,8 @@ jobs:
         cache: 'npm'
     - name: Install Dependencies
       run: npm i
+    - name: Run unit tests
+      run: npm run test
     - name: Build miniprogram
       run: npm run build:weapp
     - name: Generate private key for upload
