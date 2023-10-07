@@ -4,6 +4,7 @@
 
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import Taro from '@tarojs/taro'
 import '../images/game-dices/one-dice.svg'
 import '../images/game-dices/two-dice.svg'
 import '../images/game-dices/three-dice.svg'
@@ -26,5 +27,22 @@ export const useGlobalStore = defineStore('global', () => {
     return n * (globalKey++);
   }
 
-  return { diceSvgTable, getGlobalKey }
+  const defaultAvatar = 'cloud://cloud1-2gum4le1e2076a50.636c-cloud1-2gum4le1e2076a50-1321067110/user.png'
+
+  const userId = ref(0)
+  const userNickname = ref('User')
+  const userAvatar = ref(defaultAvatar)
+
+  const fetchUserInfo = () => {
+    
+  }
+
+  return {
+    diceSvgTable,
+    getGlobalKey,
+    userId,
+    userNickname,
+    userAvatar,
+    fetchUserInfo
+  }
 })
