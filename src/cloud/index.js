@@ -5,6 +5,7 @@
 
 import * as dataTypes from './types'
 import { cloud } from '@tarojs/taro'
+import path from 'path'
 
 cloud.init({
     env: 'cloud1-2gum4le1e2076a50'
@@ -46,6 +47,7 @@ const UserDB = {
                 } 
             }
         })
+        if (id === null) this._currentUserInfo = null
     },
     /**
      * 增加负场数
@@ -60,6 +62,45 @@ const UserDB = {
                 } 
             }
         })
+        if (id === null) this._currentUserInfo = null
+    },
+    /**
+     * 上传头像
+     * @param {string} avatarPath 头像路径
+     * @param {string?} id 用户ID，若为null则表示当前用户
+     */
+    async uploadAvatar(avatarPath, id = null) {
+        await this.getUserInfo(id)
+        let res = await cloud.uploadFile({
+            cloudPath: `user${path.extname(avatarPath)}`,
+            filePath: avatarPath
+        })
+        await cloud.callFunction({
+            name: 'updateUserInfo',
+            data: { id, data: {
+                    avatar: res.fileID
+                } 
+            }
+        })
+        if (id === null) this._currentUserInfo = null
+    },
+    /**
+     * 更新用户基本信息
+     * @param {string?} nickname 昵称，若为null则表示不变
+     * @param {string?} bio 个性签名，若为null则表示不变
+     * @param {string?} id 用户ID，若为null则表示当前用户
+     */
+    async updateUserProfile(nickname = null, bio = null, id = null) {
+        let info = await this.getUserInfo(id)
+        await cloud.callFunction({
+            name: 'updateUserInfo',
+            data: { id, data: {
+                    nickname: nickname ?? info.nickname,
+                    bio: bio ?? info.bio
+                } 
+            }
+        })
+        if (id === null) this._currentUserInfo = null
     }
 }
 
