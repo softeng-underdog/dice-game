@@ -23,6 +23,7 @@ exports.main = async (event, context) => {
         _id: id,
         nickname: `用户${id.slice(0, 8)}`,
         avatar: defaultAvatar,
+        bio: '这个人很懒，还没设置个性签名。',
         winCount: 0,
         loseCount: 0
       }

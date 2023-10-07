@@ -7,6 +7,7 @@
  * @property {string} id 用户ID
  * @property {string} nickname 用户昵称
  * @property {string} avatar 用户头像
+ * @property {string} bio 个性签名
  * @property {number} winCount 胜场数
  * @property {number} loseCount 负场数
  */
