@@ -12,10 +12,8 @@ const defaultAvatar = 'cloud://cloud1-2gum4le1e2076a50.636c-cloud1-2gum4le1e2076
 exports.main = async (event, context) => {
 
   const wxContext = cloud.getWXContext()
-  let id = wxContext.OPENID
-  if (event.id !== null) {
-    id = event.id
-  }
+  let id = event.id ?? wxContext.OPENID
+  
   let result = await userDB.doc(id).get()
   if (result.data === null) {
     if (id === wxContext.OPENID) {
