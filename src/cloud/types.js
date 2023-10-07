@@ -8,7 +8,7 @@
  * @property {string} nickname 用户昵称
  * @property {string} avatar 用户头像
  * @property {number} winCount 胜场数
- * @property {number} loseCount 胜场数
+ * @property {number} loseCount 负场数
  */
 
 export default {}

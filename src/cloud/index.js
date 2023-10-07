@@ -32,6 +32,34 @@ const UserDB = {
         if (id === null)
             this._currentUserInfo = res.result
         return res.result
+    },
+    /**
+     * 增加胜场数
+     * @param {string?} id 用户ID，若为null则表示当前用户
+     */
+    async incWinCount(id = null) {
+        let info = await this.getUserInfo(id)
+        await cloud.callFunction({
+            name: 'updateUserInfo',
+            data: { id, data: {
+                    winCount: info.winCount + 1
+                } 
+            }
+        })
+    },
+    /**
+     * 增加负场数
+     * @param {string?} id 用户ID，若为null则表示当前用户
+     */
+    async incLoseCount(id = null) {
+        let info = await this.getUserInfo(id)
+        await cloud.callFunction({
+            name: 'updateUserInfo',
+            data: { id, data: {
+                    loseCount: info.loseCount + 1
+                } 
+            }
+        })
     }
 }
 
