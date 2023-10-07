@@ -4,7 +4,7 @@
 
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import Taro from '@tarojs/taro'
+import cloud from '../cloud'
 import '../images/game-dices/one-dice.svg'
 import '../images/game-dices/two-dice.svg'
 import '../images/game-dices/three-dice.svg'
@@ -29,12 +29,15 @@ export const useGlobalStore = defineStore('global', () => {
 
   const defaultAvatar = 'cloud://cloud1-2gum4le1e2076a50.636c-cloud1-2gum4le1e2076a50-1321067110/user.png'
 
-  const userId = ref(0)
-  const userNickname = ref('User')
+  const userId = ref('')
+  const userNickname = ref('用户')
   const userAvatar = ref(defaultAvatar)
 
-  const fetchUserInfo = () => {
-    
+  const fetchUserInfo = async () => {
+    let info = await cloud.UserDB.getUserInfo()
+    userId.value = info.id
+    userNickname.value = info.nickname
+    userAvatar.value = info.avatar
   }
 
   return {

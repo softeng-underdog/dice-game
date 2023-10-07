@@ -1,7 +1,7 @@
 <template>
   <view class="user-bar" :style="statusBarMargin">
     <image class="user-avatar" :style="avatarSize" :src="globalStore.userAvatar"></image>
-    <text class="user-nickname">你好！{{ globalStore.userNickname }}</text>
+    <text class="user-nickname">{{ globalStore.userNickname }}</text>
   </view>
 </template>
 
