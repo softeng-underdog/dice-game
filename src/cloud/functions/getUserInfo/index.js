@@ -2,7 +2,9 @@
 const cloud = require('wx-server-sdk')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV }) // 使用当前云环境
-const db = cloud.database()
+const db = cloud.database({
+  throwOnNotFound: false
+})
 const userDB = db.collection('user_db')
 const defaultAvatar = 'cloud://cloud1-2gum4le1e2076a50.636c-cloud1-2gum4le1e2076a50-1321067110/user.png'
 
@@ -11,14 +13,14 @@ exports.main = async (event, context) => {
 
   const wxContext = cloud.getWXContext()
   let id = wxContext.OPENID
-  if ('id' in event) {
+  if (event.id !== null) {
     id = event.id
   }
-  let result = await userDB.where({ id }).get()
-  if (result.data.length == 0) {
+  let result = await userDB.doc(id).get()
+  if (result.data === null) {
     if (id === wxContext.OPENID) {
       const defaultUserRecord = {
-        id,
+        _id: id,
         nickname: `用户${id.slice(0, 8)}`,
         avatar: defaultAvatar,
         winCount: 0,
@@ -27,11 +29,11 @@ exports.main = async (event, context) => {
       await userDB.add({
         data: defaultUserRecord
       })
-      result.data.push(defaultUserRecord)
+      result.data = defaultUserRecord
     }
     else {
-      return null
+      throw new Error('User does not exist')
     }
   }
-  return result.data[0]
+  return result.data
 }
