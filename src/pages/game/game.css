@@ -75,7 +75,7 @@
 .lock-area {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     background-image: url(../../images/game-control/lock-bkg.svg);
     background-repeat: no-repeat;
     background-position: center center;
