@@ -4,7 +4,7 @@
 
 /**
  * @typedef PlayerDescriptor 玩家描述符
- * @property {number} id 玩家ID
+ * @property {string} id 玩家ID
  * @property {string} name 玩家名称
  * @property {string} avatar 玩家头像
  * @property {boolean} isCPU 是否是AI玩家
@@ -12,7 +12,7 @@
 
 /**
  * @typedef PlayerData 玩家游戏数据
- * @property {number} id 玩家ID
+ * @property {string} id 玩家ID
  * @property {string} name 玩家名称
  * @property {string} avatar 玩家头像
  * @property {boolean} isCPU 是否是AI玩家
