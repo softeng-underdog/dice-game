@@ -1,6 +1,6 @@
 <template>
   <view class="page-game">
-    <game-info avatar="../../images/user.png" :multiplier="1" :current-game="1" :games="12" @toggle-view="togglePlayerView" />
+    <game-info avatar="cloud://cloud1-2gum4le1e2076a50.636c-cloud1-2gum4le1e2076a50-1321067110/user.png" :multiplier="1" :current-game="1" :games="12" @toggle-view="togglePlayerView" />
     <view v-if="viewSelector == 0" class="game-view">
       <view class="game-area">
         <view class="free-area">
@@ -73,13 +73,24 @@ import imageDice from '../../components/game/image-dice.vue'
 import bonusTr from '../../components/game/bonus-tr.vue'
 import totalTr from '../../components/game/total-tr.vue'
 import playerCard from '../../components/game/player-card.vue'
+import * as actTypes from '../../game-action'
 import '../../style/common.css'
 import './game.css'
 
 useLoad(() => {
   Taro.hideHomeButton()
-  Taro.setNavigationBarTitle({title: 'WinTP的回合'})
+  Taro.setNavigationBarTitle({title: 'WinTP - 锁定阶段 - 10'})
 })
+
+/**
+ * 根据游戏动作更改页面状态
+ * @param {actTypes.GameAction} action 游戏动作
+ */
+const dispatchAction = (action) => {
+  switch(action.type) {
+    
+  }
+}
 
 const incMultiplier = () => {
   actionMultiplier.value = Math.min(actionMultiplier.value + 1, 3);
@@ -93,11 +104,11 @@ const togglePlayerView = () => {
   viewSelector.value = viewSelector.value == 0 ? 1 : 0
 }
 
-let viewSelector = ref(3)
+let viewSelector = ref(0)
 
 let auto = ref(false)
-let lock = ref(true)
-let double = ref(false)
+let lock = ref(false)
+let double = ref(true)
 
 let actionMultiplier = ref(0)
 
