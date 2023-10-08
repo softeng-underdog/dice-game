@@ -11,9 +11,15 @@ import GameData from '../game-data'
  * @readonly
  * @enum {number}
  */
-const GameMode = {
-  offline: 0,
-  online: 1
+export const GameMode = {
+  /**
+   * 本地游戏
+   */
+  OFFLINE: 0,
+  /**
+   * 在线对战
+   */
+  ONLINE: 1
 }
 
 export const useGameStore = defineStore('game', () => {
