@@ -41,14 +41,7 @@
     </view>
 
     <view v-if="viewSelector == 1" class="player-view">
-      <player-card class="player-card-margin" name="WinTP" avatar="../../images/user.png" :chips="500" :score="123" :dice-data="[1, 2, 3, 4, 5]" top-player />
-      <player-card class="player-card-margin" name="Blossom的那一束阳光" avatar="../../images/user.png" :chips="2010" :score="135" :dice-data="[1, 2, 2, 6, 6]" />
-      <player-card class="player-card-margin" name="Blossom的那一束阳光" avatar="../../images/user.png" :chips="2010" :score="135" :dice-data="[1, 2, 2, 6, 6]" />
-      <player-card class="player-card-margin" name="Blossom的那一束阳光" avatar="../../images/user.png" :chips="2010" :score="135" :dice-data="[1, 2, 2, 6, 6]" />
-      <player-card class="player-card-margin" name="Blossom的那一束阳光" avatar="../../images/user.png" :chips="2010" :score="135" :dice-data="[1, 2, 2, 6, 6]" />
-      <player-card class="player-card-margin" name="Blossom的那一束阳光" avatar="../../images/user.png" :chips="2010" :score="135" :dice-data="[1, 2, 2, 6, 6]" />
-      <player-card class="player-card-margin" name="Blossom的那一束阳光" avatar="../../images/user.png" :chips="2010" :score="135" :dice-data="[1, 2, 2, 6, 6]" />
-      <player-card class="player-card-margin" name="Blossom的那一束阳光" avatar="../../images/user.png" :chips="2010" :score="135" :dice-data="[1, 2, 2, 6, 6]" />
+      <player-card v-for="(playerData, index) of gameStore.gd.getPlayerDataAll()" class="player-card-margin" :key="globalStore.getGlobalKey(index)" :name="playerData.name" :avatar="playerData.avatar" :chips="playerData.chips" :score="123" :dice-data="playerData.diceData" />
     </view>
 
     <view v-if="viewSelector == 2" class="end-view">
@@ -73,9 +66,14 @@ import imageDice from '../../components/game/image-dice.vue'
 import bonusTr from '../../components/game/bonus-tr.vue'
 import totalTr from '../../components/game/total-tr.vue'
 import playerCard from '../../components/game/player-card.vue'
+import { useGlobalStore } from '../../stores/global'
+import { useGameStore } from '../../stores/game'
 import * as actTypes from '../../game-action'
 import '../../style/common.css'
 import './game.css'
+
+const gameStore = useGameStore()
+const globalStore = useGlobalStore()
 
 useLoad(() => {
   Taro.hideHomeButton()
