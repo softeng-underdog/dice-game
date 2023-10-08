@@ -27,7 +27,8 @@ export const useGlobalStore = defineStore('global', () => {
     return n * (globalKey++);
   }
 
-  const defaultAvatar = 'cloud://cloud1-2gum4le1e2076a50.636c-cloud1-2gum4le1e2076a50-1321067110/user.png'
+  const defaultAvatar = ref('cloud://cloud1-2gum4le1e2076a50.636c-cloud1-2gum4le1e2076a50-1321067110/user.png')
+  const aiAvatar = ref('cloud://cloud1-2gum4le1e2076a50.636c-cloud1-2gum4le1e2076a50-1321067110/ai.png')
 
   const userId = ref('')
   const userNickname = ref('用户')
@@ -46,6 +47,8 @@ export const useGlobalStore = defineStore('global', () => {
     userId,
     userNickname,
     userAvatar,
-    fetchUserInfo
+    fetchUserInfo,
+    defaultAvatar,
+    aiAvatar
   }
 })
