@@ -61,6 +61,7 @@ class GameData {
      * @param {dataTypes.PlayerDescriptor[]} playerDescriptors 每个玩家的描述符列表
      */
     initMatch(games, playerChips, playerDescriptors) {
+        this.playerData = []
         this.games = games;
         let length = playerDescriptors.length;
         for(let i = 0;i < length;i ++){
@@ -69,7 +70,7 @@ class GameData {
                 name : playerDescriptors[i].name,
                 avatar : playerDescriptors[i].avatar,
                 isCPU : playerDescriptors[i].isCPU,
-                diceData : [0,0,0,0,0],
+                diceData : [1,1,1,1,1],
                 diceLockedBitmap : 0,
                 chips : playerChips
             };
@@ -97,7 +98,10 @@ class GameData {
      * @returns {dataTypes.PlayerData} 游戏数据
      */
     getPlayerData(playerIndex = -1) {
-        if(playerIndex == -1){
+        if(playerIndex >= this.playerData.length || playerIndex < -1){
+            throw new Error("Index out of range")
+        }
+        else if(playerIndex == -1){
             playerIndex = this.currentPlayerIndex
         }
         return this.playerData[playerIndex];
@@ -116,13 +120,14 @@ class GameData {
      * @param {number} playerIndex 玩家数据索引，若为-1，则循环选取下一位玩家
      */
     switchPlayer(playerIndex = -1) {
-        if(playerIndex == -1){
+        if(playerIndex >= this.playerData.length || playerIndex < -1){
+            throw new Error("Index out of range")
+        }
+        else if(playerIndex == -1){
             let length = this.playerData.length;
-            this.currentPlayerIndex = (this.currentPlayerIndex + 1) % length;
+            playerIndex = (this.currentPlayerIndex + 1) % length;
         }
-        else {
-            this.currentPlayerIndex = playerIndex;
-        }
+        this.currentPlayerIndex = playerIndex;
     }
 
     /**
@@ -131,6 +136,12 @@ class GameData {
      * @returns {dataTypes.ScoreInfo} 分数信息
      */
     getPlayerScoreInfo(playerIndex = -1) {
+        if(playerIndex >= this.playerData.length || playerIndex < -1){
+            throw new Error("Index out of range")
+        }
+        else if(playerIndex == -1){
+            playerIndex = this.currentPlayerIndex
+        }
         let bonustype = 0;
         let bonusscore = 0;
         let dicescore = 0;
@@ -159,7 +170,7 @@ class GameData {
                 break;
             }
         }
-        let sum2 = 0;//用于判断是否大顺子
+        let sum2 = 0
         for(let i = 2;i < 7;i ++){
             if(diceTypeNum[i] == 1){
                 sum2 ++;
@@ -169,7 +180,7 @@ class GameData {
                 break;
             }
         }
-        if(sum1 == 5 || sum2 == 5){//满足其一
+        if(sum1 == 5 || sum2 == 5){
             bonustype = dataTypes.BonusType.BIG_STRAIGHT;
             bonusscore = 60;
             totalscore = bonusscore + dicescore;
@@ -180,7 +191,6 @@ class GameData {
                 totalScore : totalscore
             };
         }
-
         for(let i = 1;i < 7;i ++){//其他奖励分类型
             if(diceTypeNum[i] == 5){//五连
                 bonustype = dataTypes.BonusType.QUINTUPLE;
@@ -195,7 +205,7 @@ class GameData {
             else if(diceTypeNum[i] == 3){//三连或葫芦
                 let flag = false;
                 for(let j = 1;j < 7;j ++){
-                    if(diceTypeNum[i] == 2){//葫芦
+                    if(diceTypeNum[j] == 2){//葫芦
                         bonustype = dataTypes.BonusType.GOURD;
                         bonusscore = 20;
                         flag = true;
@@ -209,17 +219,15 @@ class GameData {
                 break;
             }
             else if(diceTypeNum[i] == 2){//双对或其他
-                let flag = false;
                 for(let j = i + 1;j < 7;j ++){
                     if(diceTypeNum[j] == 2){//双对
                         bonustype = dataTypes.BonusType.DOUBLE_PAIR;
                         bonusscore = 10;
-                        flag = true;
+                        break;
                     }
                 }
-                if(flag){
-                    break;
-                }
+            }
+            else{
                 let sum1 = 0;//小顺子1
                 let sum2 = 0;//小顺子2
                 let sum3 = 0;//小顺子3
@@ -243,8 +251,9 @@ class GameData {
                     bonusscore = 30;
                     break;
                 }
-            }   
+            }
         }
+        
         totalscore = bonusscore + dicescore;
         return {
             bonusType : bonustype,
@@ -277,17 +286,25 @@ class GameData {
             }
         }
         for(let i = 0;i < length;i ++){//是否有重复的
-            if(totalscore[i].totalScore == maxScore){//将所有分数为最高分的都加入数组
+            if(totalscore[i].totalScore == maxScore){//将所有分数为最高分的玩家索引都加入数组
                 topPlayerIndex.push(i);
-                topPlayerData.push(this.playerData[i]);
-                num ++;
+                let playerdata = {
+                    id : this.playerData[i].id,
+                    name : this.playerData[i].name,
+                    avatar : this.playerData[i].avatar,
+                    isCPU : this.playerData[i].isCPU,
+                    diceData : this.playerData[i].diceData,
+                    diceLockedBitmap : this.playerData[i].diceLockedBitmap,
+                    chips : this.playerData[i].chips
+                };
+                topPlayerData.push(playerdata)
             }
         }
 
         for(let i = 0;i < length;i++){//获取最高分玩家从每个玩家手中赢得的的筹码数、被击飞玩家索引，扣除其他玩家的筹码
             chipDifference.push((maxScore-totalscore[i].totalScore) * this.multiplier);
             getchips += chipDifference[i];
-            this.playerData[i].chips -= chipDifference[i];
+            this.playerData[i].chips -= chipDifference[i] * topPlayerData.length;
             if((this.playerData[i].chips) <= 0){//如果被击飞
                 knockoutPlayerIndex.push(i);
             }
@@ -324,10 +341,23 @@ class GameData {
      * @returns {number[]} 投掷结果
      */
     rollDice(rollResult = null, playerIndex = -1) {
+        if(rollResult != null && rollResult.length != 5){
+            throw new Error("rollResult length error")
+        }
+        else if(rollResult != null){
+            for(let i = 0;i < 5;i++){
+                if(rollResult[i] > 6 || rollResult[i] < 1){
+                    throw new Error("rollResult content error")
+                }
+            }
+        }
+        if(playerIndex >= this.playerData.length || playerIndex < -1){
+            throw new Error("playerIndex out of range")
+        }
         if(playerIndex == -1){
             playerIndex = this.currentPlayerIndex;
         }
-        if (rollResult != null){
+        if (rollResult !== null){
             this.playerData[playerIndex].diceData = rollResult;
         }
         else {
@@ -338,7 +368,7 @@ class GameData {
             }
         }
         this.playerData[playerIndex].diceData.sort();
-        return this.playerData[playerIndex].diceData;
+        return [...this.playerData[playerIndex].diceData];
     }
 
     /**
@@ -348,7 +378,13 @@ class GameData {
      * @returns {boolean} 切换后的锁定状态
      */
     toggleLockedByIndex(index, playerIndex = -1) {
-        if(playerIndex == -1){
+        if(playerIndex >= this.playerData.length || playerIndex < -1){
+            throw new Error("playerIndex out of range")
+        }
+        else if(index > 4 || index < 0){
+            throw new Error("Index out of range")
+        }
+        else if(playerIndex == -1){
             playerIndex = this.currentPlayerIndex;
         }
         this.playerData[playerIndex].diceLockedBitmap = this.playerData[playerIndex].diceLockedBitmap ^ (1 << index);
@@ -362,7 +398,13 @@ class GameData {
      * @returns {boolean} 锁定状态
      */
     getLockedByIndex(index, playerIndex = -1) {
-        if(playerIndex == -1){
+        if(playerIndex >= this.playerData.length || playerIndex < -1){
+            throw new Error("playerIndex out of range")
+        }
+        else if(index > 4 || index < 0){
+            throw new Error("Index out of range")
+        }
+        else if(playerIndex == -1){
             playerIndex = this.currentPlayerIndex;
         }
         return ((this.playerData[playerIndex].diceLockedBitmap & (1 << index)) !== 0);//该位为1返回true，否则返回false
@@ -374,6 +416,12 @@ class GameData {
      * @param {number} playerIndex 玩家数据索引，若为-1，则选取当前玩家
      */
     setLockedBitmap(bitmap, playerIndex = -1) {
+        if(playerIndex >= this.playerData.length || playerIndex < -1){
+            throw new Error("playerIndex out of range")
+        }
+        else if(bitmap > 31 || bitmap < 0){
+            throw new Error("bitmap out of range")
+        }
         if(playerIndex == -1){
             playerIndex = this.currentPlayerIndex;
         }

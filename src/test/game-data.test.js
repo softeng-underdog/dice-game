@@ -75,7 +75,7 @@ const testQuadruple = [
  * 测试用五连数据
  */
 const testQuintuple = [
-    [1, 1, 1, 1, 1]
+    [1, 1, 1, 1, 1],
     [6, 6, 6, 6, 6]
 ]
 
@@ -100,7 +100,7 @@ const testBigStraight = [
  */
 const testNormalComb = [
     [1, 3, 4, 6, 6],
-    [1, 6, 4, 3, 2]
+    [2, 2, 3, 4, 6]
 ]
 
 
@@ -148,7 +148,7 @@ describe('GameData', () => {
     })
 
     it('switchPlayer', ({expect, gd}) => {
-        expect(() => gd.getPlayerData(10)).toThrowError()
+        expect(() => gd.switchPlayer(10)).toThrowError()
         //测试正常功能
         gd.switchPlayer(1)
         expect(gd.currentPlayerIndex).toBe(1)
@@ -330,7 +330,7 @@ describe('GameData', () => {
             })
         })
         //五连
-        testQuadruple.forEach(diceData => {
+        testQuintuple.forEach(diceData => {
             gd.rollDice(diceData)
             scoreInfo = gd.getPlayerScoreInfo()
             expect(scoreInfo).toMatchObject({
@@ -384,7 +384,7 @@ describe('GameData', () => {
             chips: testChips
         })
         expect(allocateInfo.topPlayerData[1]).toMatchObject({
-            id: testPlayerDescriptors[1].id,
+            id: testPlayerDescriptors[2].id,
             chips: testChips
         })
         expect(gd.getPlayerData(0)).toMatchObject({
@@ -407,7 +407,7 @@ describe('GameData', () => {
         allocateInfo = gd.finishGame()
         expect(allocateInfo).toMatchObject({
             topPlayerIndex: [0],
-            chipDifference: [0, 22, 20],
+            chipDifference: [0, 20, 22],
             knockoutPlayerIndex: [1, 2]
         })
         expect(gd.getPlayerData(0)).toMatchObject({
