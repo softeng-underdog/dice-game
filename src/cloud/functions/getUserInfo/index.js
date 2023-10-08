@@ -34,5 +34,12 @@ exports.main = async (event, context) => {
       throw new Error('User does not exist')
     }
   }
-  return result.data
+  return {
+    id: result.data._id,
+    nickname: result.data.nickname,
+    avatar: result.data.avatar,
+    bio: result.data.bio,
+    winCount: result.data.winCount,
+    loseCount: result.data.loseCount
+  }
 }
