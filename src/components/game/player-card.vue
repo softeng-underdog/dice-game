@@ -1,5 +1,5 @@
 <template>
-  <view class="box-border player-card">
+  <view class="box-border player-card" @tap="emit(props.index)">
     <image v-show="props.topPlayer" class="player-trophy" src="../../images/game-control/trophy.svg" />
     <view class="flex card-row">
       <image class="player-avatar" :src="avatar" />
@@ -21,9 +21,15 @@ import { useGlobalStore } from '../../stores/global'
 import '../../style/common.css'
 import '../style/player-card.css'
 
+const emit = defineEmits(['tapCard'])
+
 const globalStore = useGlobalStore()
 
 const props = defineProps({
+  index: {
+    type: Number,
+    default: 0
+  },
   name: {
     type: String,
     required: true
