@@ -36,7 +36,7 @@ export const useGameStore = defineStore('game', () => {
    */
   const roomId = ref('')
   /**
-   * 当前玩家数据索引（仅对战模式）
+   * 该客户端玩家的数据索引
    */
   const playerIndex = ref(0)
   /**
