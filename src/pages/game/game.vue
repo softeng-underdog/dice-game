@@ -1,11 +1,12 @@
 <template>
   <view class="page-game">
     <game-info :avatar="viewPlayerData.avatar" :multiplier="gameGlobalInfo.multiplier" :current-game="gameGlobalInfo.currentGame"
-      :games="gameGlobalInfo.games" @toggle-view="togglePlayerView" />
+      :games="gameGlobalInfo.games" @toggle-view="togglePlayerListView" />
     <view v-if="currentView === GameView.MAIN" class="game-view">
       <view class="game-area">
         <view class="free-area">
-          <image-dice v-for="dice of viewPlayerData.diceData" class="game-dice" :key="globalStore.getGlobalKey(dice)" :dice="dice" />
+          <image-dice v-for="index of freeDiceIndices" class="game-dice" :key="globalStore.getGlobalKey(index)"
+            :dice="viewPlayerData.diceData[index]" @tap-dice="lockDice(index)" />
         </view>
         <bonus-tr name="双对" :score="10" :achieved="viewPlayerScoreInfo.bonusType == gdTypes.BonusType.DOUBLE_PAIR" />
         <bonus-tr name="三连" :score="10" :achieved="viewPlayerScoreInfo.bonusType == gdTypes.BonusType.TRIPLE"/>
@@ -18,7 +19,8 @@
         <total-tr name="本轮总分" :score="viewPlayerScoreInfo.totalScore" />
         <total-tr name="当前筹码" :score="viewPlayerData.chips" />
         <view class="lock-area">
-          
+          <image-dice v-for="index of lockedDiceIndices" class="game-dice" :key="globalStore.getGlobalKey(index)"
+            :dice="viewPlayerData.diceData[index]" @tap-dice="freeDice(index)" />
         </view>
       </view>
       <view class="action-area">
@@ -39,7 +41,8 @@
 
     <view v-if="currentView === GameView.PLAYER_LIST" class="player-view">
       <player-card v-for="(playerData, index) of gameStore.gd.getPlayerDataAll()" class="player-card-margin" :key="globalStore.getGlobalKey(index)"
-        :name="playerData.name" :avatar="playerData.avatar" :chips="playerData.chips" :score="gameStore.gd.getPlayerScoreInfo(index).totalScore" :dice-data="playerData.diceData" />
+        :name="playerData.name" :avatar="playerData.avatar" :chips="playerData.chips" :score="gameStore.gd.getPlayerScoreInfo(index).totalScore"
+        :dice-data="playerData.diceData" @tap-card="switchPlayerView(index)" />
     </view>
 
     <view v-if="currentView === GameView.KNOCKOUT" class="end-view">
@@ -172,7 +175,7 @@ const knockoutPlayerStr = computed(() => {
 /**
  * 当前游戏阶段
  */
-const currentStage = ref(GameStage.ROLL)
+const currentStage = ref(GameStage.LOCK)
 
 /**
  * 当前游戏视图
@@ -183,6 +186,29 @@ let currentView = ref(GameView.MAIN)
  * 当前倒计时
  */
 const countdown = ref(10)
+
+/**
+ * 投掷区骰子索引列表
+ */
+const freeDiceIndices = computed(() => {
+  let indices = []
+  for (let i = 0; i < 5; i++) {
+    if (!gameStore.gd.getLockedByIndex(i, viewPlayerIndex.value))
+      indices.push(i)
+  }
+  return indices
+})
+
+/**
+ * 锁定区骰子索引列表
+ */
+const lockedDiceIndices = computed(() => {
+  let indices = [0, 1, 2, 3, 4]
+  indices = indices.filter(i => {
+    return freeDiceIndices.value.indexOf(i) == -1
+  })
+  return indices
+})
 
 watch(countdown, updateTitle)
 watch(currentStage, updateTitle)
@@ -231,10 +257,47 @@ const showAutoControl = computed(() => {
 /**
  * 切换玩家列表视图
  */
-const togglePlayerView = () => {
+const togglePlayerListView = () => {
   if (currentView.value == GameView.MAIN || currentView.value == GameView.PLAYER_LIST) {
     currentView.value = currentView.value == GameView.MAIN ? GameView.PLAYER_LIST : GameView.MAIN
   }
+}
+
+/**
+ * 切换主视图查看的玩家
+ * @param {number} index 玩家数据索引
+ */
+const switchPlayerView = index => {
+  currentView.value = GameView.MAIN
+  viewPlayerIndex.value = index
+}
+
+/**
+ * 锁定指定骰子
+ * @param {number} index 骰子索引
+ */
+const lockDice = index => {
+  if (!showLockControl.value) return
+  let bitmap = viewPlayerData.value.diceLockedBitmap | (1 << index)
+  dispatchAction({
+    type: actTypes.ActionType.LOCK_DICE,
+    id: viewPlayerData.value.id,
+    param: bitmap
+  })
+}
+
+/**
+ * 释放指定骰子
+ * @param {number} index 骰子索引
+ */
+ const freeDice = index => {
+  if (!showLockControl.value) return
+  let bitmap = viewPlayerData.value.diceLockedBitmap & ~(1 << index)
+  dispatchAction({
+    type: actTypes.ActionType.LOCK_DICE,
+    id: viewPlayerData.value.id,
+    param: bitmap
+  })
 }
 
 /**
@@ -242,8 +305,20 @@ const togglePlayerView = () => {
  * @param {actTypes.GameAction} action 游戏动作
  */
 const dispatchAction = (action) => {
-  switch(action.type) {
-    
+  let playerIndex = -1;
+  let playerDataList = gameStore.gd.getPlayerDataAll()
+  for (let i = 0; i < playerDataList.length; i++) {
+    if (playerDataList[i].id == action.id) {
+      playerIndex = i;
+      break;
+    }
+  }
+  if (gameStore.mode === GameMode.OFFLINE) {
+    switch(action.type) {
+      case actTypes.ActionType.LOCK_DICE:
+        gameStore.gd.setLockedBitmap(action.param, playerIndex)
+        break;
+    }
   }
 }
 
