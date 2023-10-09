@@ -1,5 +1,5 @@
 <template>
-  <view class="box-border player-card" @tap="emit(props.index)">
+  <view class="box-border player-card" @tap="emit('tapCard')">
     <image v-show="props.topPlayer" class="player-trophy" src="../../images/game-control/trophy.svg" />
     <view class="flex card-row">
       <image class="player-avatar" :src="avatar" />
@@ -26,10 +26,6 @@ const emit = defineEmits(['tapCard'])
 const globalStore = useGlobalStore()
 
 const props = defineProps({
-  index: {
-    type: Number,
-    default: 0
-  },
   name: {
     type: String,
     required: true
