@@ -39,11 +39,47 @@ export const useGameStore = defineStore('game', () => {
    * 当前玩家数据索引（仅对战模式）
    */
   const playerIndex = ref(0)
+  /**
+   * 玩家托管模式位图
+   */
+  const playerAutoBitmap = ref(0)
+  /**
+   * 获取玩家托管模式状态
+   * @param {number} index 玩家数据索引
+   * @returns {boolean} 托管模式状态
+   */
+  const getPlayerAuto = index => {
+    return (playerAutoBitmap.value & (1 << index)) !== 0
+  }
+  /**
+   * 设置玩家托管模式状态
+   * @param {number} index 玩家数据索引
+   * @param {boolean} auto 托管模式状态
+   */
+  const setPlayerAuto = (index, auto) => {
+    if (auto) {
+      playerAutoBitmap.value |= (1 << index)
+    }
+    else {
+      playerAutoBitmap.value &= ~(1 << index)
+    }
+  }
+  /**
+   * 切换玩家托管模式
+   * @param {number} index 玩家数据索引
+   */
+  const togglePlayerAuto = index => {
+    playerAutoBitmap.value ^= (1 << index)
+  }
 
   return { 
     gd,
     mode,
     roomId,
-    playerIndex
+    playerIndex,
+    playerAutoBitmap,
+    getPlayerAuto,
+    setPlayerAuto,
+    togglePlayerAuto
    }
 })
