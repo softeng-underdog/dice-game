@@ -2,7 +2,7 @@
   <view class="page-game">
     <game-info :avatar="viewPlayerData.avatar" :multiplier="gameGlobalInfo.multiplier" :current-game="gameGlobalInfo.currentGame"
       :games="gameGlobalInfo.games" @toggle-view="togglePlayerView" />
-    <view v-if="viewSelector == 0" class="game-view">
+    <view v-if="currentView === GameView.MAIN" class="game-view">
       <view class="game-area">
         <view class="free-area">
           <image-dice v-for="dice of viewPlayerData.diceData" class="game-dice" :key="globalStore.getGlobalKey(dice)" :dice="dice" />
@@ -22,32 +22,33 @@
         </view>
       </view>
       <view class="action-area">
-        <view v-if="lock && !auto" class="action-common-area">
+        <view v-if="showLockControl" class="action-common-area">
           <text class="game-btn">确认锁定</text>
         </view>
-        <view v-if="double && !auto" class="action-common-area">
+        <view v-if="showDoubleControl" class="action-common-area">
           <image class="svg-btn" src="../../images/game-control/minus-btn.svg" @tap="decMultiplier" />
           <text class="game-btn">{{ actionMultiplierText }}</text>
           <image class="svg-btn" src="../../images/game-control/plus-btn.svg" @tap="incMultiplier" />
         </view>
-        <view v-if="auto" class="action-common-area">
+        <view v-if="showAutoControl" class="action-common-area">
           <text class="game-btn">取消托管</text>
         </view>
-        <text v-if="!auto" class="auto-btn">托管</text>
+        <text v-if="!showAutoControl" class="auto-btn">托管</text>
       </view>
     </view>
 
-    <view v-if="viewSelector == 1" class="player-view">
-      <player-card v-for="(playerData, index) of gameStore.gd.getPlayerDataAll()" class="player-card-margin" :key="globalStore.getGlobalKey(index)" :name="playerData.name" :avatar="playerData.avatar" :chips="playerData.chips" :score="123" :dice-data="playerData.diceData" />
+    <view v-if="currentView === GameView.PLAYER_LIST" class="player-view">
+      <player-card v-for="(playerData, index) of gameStore.gd.getPlayerDataAll()" class="player-card-margin" :key="globalStore.getGlobalKey(index)"
+        :name="playerData.name" :avatar="playerData.avatar" :chips="playerData.chips" :score="gameStore.gd.getPlayerScoreInfo(index).totalScore" :dice-data="playerData.diceData" />
     </view>
 
-    <view v-if="viewSelector == 2" class="end-view">
-      <text class="end-view-text">WinTP，Blossom的那一束阳光</text>
+    <view v-if="currentView === GameView.KNOCKOUT" class="end-view">
+      <text class="end-view-text">{{ knockoutPlayerStr }}</text>
       <image src="../../images/knockout.svg" />
       <text class="end-view-text">击飞！</text>
     </view>
 
-    <view v-if="viewSelector == 3" class="end-view">
+    <view v-if="currentView === GameView.GAME_OVER" class="end-view">
       <image src="../../images/gameover.svg" />
       <text class="end-view-text">游戏结束</text>
     </view>
@@ -57,18 +58,71 @@
 <script setup>
 import Taro from '@tarojs/taro'
 import { useLoad } from '@tarojs/taro'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import gameInfo from '../../components/game/game-info.vue'
 import imageDice from '../../components/game/image-dice.vue'
 import bonusTr from '../../components/game/bonus-tr.vue'
 import totalTr from '../../components/game/total-tr.vue'
 import playerCard from '../../components/game/player-card.vue'
 import { useGlobalStore } from '../../stores/global'
-import { useGameStore } from '../../stores/game'
+import { GameMode, useGameStore } from '../../stores/game'
 import * as actTypes from '../../game-action'
 import * as gdTypes from '../../game-data/types'
 import '../../style/common.css'
 import './game.css'
+
+/**
+ * 游戏阶段枚举
+ * @readonly
+ * @enum {number}
+ */
+const GameStage = {
+  /**
+   * 投掷阶段
+   */
+  ROLL: 0,
+  /**
+   * 锁定阶段
+   */
+  LOCK: 1,
+  /**
+   * 加倍阶段
+   */
+  DOUBLE: 2
+}
+
+/**
+ * 游戏视图
+ * @readonly
+ * @enum {number}
+ */
+ const GameView = {
+  /**
+   * 主视图
+   */
+  MAIN: 0,
+  /**
+   * 玩家列表视图
+   */
+  PLAYER_LIST: 1,
+  /**
+   * 游戏结束视图
+   */
+  GAME_OVER: 2,
+  /**
+   * 击飞视图
+   */
+  KNOCKOUT: 3
+}
+
+/**
+ * 游戏阶段字符串转换表
+ */
+const stageStrTable = [
+  '投掷阶段',
+  '锁定阶段',
+  '加倍阶段'
+]
 
 const gameStore = useGameStore()
 const globalStore = useGlobalStore()
@@ -102,10 +156,86 @@ const viewPlayerScoreInfo = computed(() => {
   return gameStore.gd.getPlayerScoreInfo(viewPlayerIndex.value)
 })
 
-useLoad(() => {
-  Taro.hideHomeButton()
-  Taro.setNavigationBarTitle({title: 'WinTP - 锁定阶段 - 10'})
+/**
+ * 击飞玩家的数据索引列表
+ */
+const knockoutPlayerIndex = ref([])
+
+const knockoutPlayerStr = computed(() => {
+  let playerName = []
+  knockoutPlayerIndex.value.forEach(v => {
+    playerName.push(gameStore.gd.getPlayerData(v).name)
+  })
+  return playerName.join('，')
 })
+
+/**
+ * 当前游戏阶段
+ */
+const currentStage = ref(GameStage.ROLL)
+
+/**
+ * 当前游戏视图
+ */
+let currentView = ref(GameView.MAIN)
+
+/**
+ * 当前倒计时
+ */
+const countdown = ref(10)
+
+watch(countdown, updateTitle)
+watch(currentStage, updateTitle)
+watch(gameStore.gd.getPlayerData(), updateTitle)
+
+/**
+ * 更新标题
+ */
+const updateTitle = (ov, nv) => {
+  let playerName = gameStore.gd.getPlayerData().name
+  let stageStr = stageStrTable[currentStage.value]
+  Taro.setNavigationBarTitle({title: `${playerName} - ${stageStr} - 10`})
+}
+
+/**
+ * 是否显示锁定控件
+ */
+const showLockControl = computed(() => {
+  return gameGlobalInfo.value.currentPlayerIndex === gameStore.playerIndex
+    && viewPlayerIndex.value === gameStore.playerIndex
+    && !gameStore.getPlayerAuto(gameStore.playerIndex)
+    && currentStage.value === GameStage.LOCK
+})
+
+/**
+ * 是否显示加倍控件
+ */
+const showDoubleControl = computed(() => {
+  return gameGlobalInfo.value.currentPlayerIndex === gameStore.playerIndex
+    && viewPlayerIndex.value === gameStore.playerIndex
+    && !gameStore.getPlayerAuto(gameStore.playerIndex)
+    && currentStage.value === GameStage.DOUBLE
+})
+
+/**
+ * 是否显示取消托管控件
+ */
+const showAutoControl = computed(() => {
+  if (gameStore.mode === GameMode.OFFLINE) {
+    return gameStore.getPlayerAuto(viewPlayerIndex.value)
+  }
+  return viewPlayerIndex.value === gameStore.playerIndex
+    && gameStore.getPlayerAuto(gameStore.playerIndex)
+})
+
+/**
+ * 切换玩家列表视图
+ */
+const togglePlayerView = () => {
+  if (currentView.value == GameView.MAIN || currentView.value == GameView.PLAYER_LIST) {
+    currentView.value = currentView.value == GameView.MAIN ? GameView.PLAYER_LIST : GameView.MAIN
+  }
+}
 
 /**
  * 根据游戏动作更改页面状态
@@ -125,16 +255,6 @@ const decMultiplier = () => {
   actionMultiplier.value = Math.max(actionMultiplier.value - 1, 0);
 }
 
-const togglePlayerView = () => {
-  viewSelector.value = viewSelector.value == 0 ? 1 : 0
-}
-
-let viewSelector = ref(0)
-
-let auto = ref(false)
-let lock = ref(false)
-let double = ref(true)
-
 let actionMultiplier = ref(0)
 
 let actionMultiplierText = computed(() => {
@@ -142,6 +262,11 @@ let actionMultiplierText = computed(() => {
     return '不加倍'
   }
   return `${actionMultiplier.value}倍`
+})
+
+useLoad(() => {
+  Taro.hideHomeButton()
+  updateTitle()
 })
 
 </script>
