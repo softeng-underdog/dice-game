@@ -21,9 +21,9 @@ export const ActionType = {
      */
     ROLL_DICE: 0,
     /**
-     * 切换骰子锁定状态，param为number，表示骰子索引
+     * 设置骰子锁定状态，param为number，表示锁定位图
      */
-    TOGGLE_LOCKED: 1,
+    LOCK_DICE: 1,
     /**
      * 加倍，param为number，表示所加倍数
      */
