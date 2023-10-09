@@ -81,5 +81,5 @@ export const useGameStore = defineStore('game', () => {
     getPlayerAuto,
     setPlayerAuto,
     togglePlayerAuto
-   }
+  }
 })

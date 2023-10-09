@@ -40,6 +40,8 @@ const gameNumber = ref(1)
 
 const startGame = async () => {
   gameStore.mode = GameMode.OFFLINE
+  gameStore.playerIndex = 0
+  gameStore.playerAutoBitmap = 0
   let info = await cloud.UserDB.getUserInfo()
   /**
    * @type {gdTypes.PlayerDescriptor[]}
