@@ -567,6 +567,19 @@ const dispatchAction = action => {
   }
 }
 
+/**
+ * 获取当前游戏阶段的CPU决策
+ * @returns {number} 如果阶段为LOCK，返回决策的锁定位图；如果阶段为DOUBLE，返回决策的加倍数
+ */
+const genCPUDecision = () => {
+  if (currentStage.value === GameStage.LOCK) {
+    gameStore.gd.getPlayerScoreInfo(7)
+  }
+  else {
+
+  }
+}
+
 const incMultiplier = () => {
   actionMultiplier.value = Math.min(actionMultiplier.value + 1, 3);
 }
