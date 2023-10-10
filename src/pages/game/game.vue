@@ -29,7 +29,7 @@
         </view>
         <view v-if="showDoubleControl" class="action-common-area">
           <image class="svg-btn" src="../../images/game-control/minus-btn.svg" @tap="decMultiplier" />
-          <text class="game-btn">{{ actionMultiplierText }}</text>
+          <text class="game-btn" @tap="double">{{ actionMultiplierText }}</text>
           <image class="svg-btn" src="../../images/game-control/plus-btn.svg" @tap="incMultiplier" />
         </view>
         <view v-if="showAutoControl" class="action-common-area">
@@ -220,7 +220,18 @@ watch(() => gameStore.gd.getPlayerData(), () => updateTitle())
 const updateTitle = () => {
   let playerName = gameStore.gd.getPlayerData().name
   let stageStr = stageStrTable[currentStage.value]
-  Taro.setNavigationBarTitle({title: `${playerName} - ${stageStr} - 10`})
+  Taro.setNavigationBarTitle({title: `${playerName} - ${stageStr}`})
+}
+
+/**
+ * 显示阶段提示框
+ */
+const showStageToast = () => {
+  let stageStr = stageStrTable[currentStage.value]
+  Taro.showToast({
+    title: stageStr,
+    icon: 'none'
+  })
 }
 
 /**
@@ -259,6 +270,13 @@ const showAutoControl = computed(() => {
  */
 const isCurrentPlayerTurn = computed(() => {
   return gameGlobalInfo.value.currentPlayerIndex === gameStore.playerIndex
+})
+
+/**
+ * 玩家数量
+ */
+const playerNumber = computed(() => {
+  return gameStore.gd.getPlayerDataAll().length
 })
 
 /**
@@ -325,9 +343,9 @@ const switchPlayer = (index = -1) => {
  * 完成锁定动作
  */
 const finishLockSelection = () => {
-  let playerLen = gameStore.gd.getPlayerDataAll().length
-  if (gameGlobalInfo.value.currentPlayerIndex === playerLen - 1) {
+  if (gameGlobalInfo.value.currentPlayerIndex === playerNumber.value - 1) {
     //转加倍阶段
+    switchPlayer()
     dispatchAction({
       type: actTypes.ActionType.DOUBLE,
       id: null
@@ -353,6 +371,18 @@ const rollDice = () => {
 }
 
 /**
+ * 投递加倍动作
+ */
+const double = () => {
+  //加倍并切换下一位玩家
+  dispatchAction({
+    type: actTypes.ActionType.DOUBLE,
+    id: null,
+    param: actionMultiplier.value
+  })
+}
+
+/**
  * 根据游戏动作更改页面状态
  * @param {actTypes.GameAction} action 游戏动作
  */
@@ -374,16 +404,56 @@ const dispatchAction = action => {
         currentStage.value = GameStage.ROLL
         setTimeout(() => {
           let rollResult = gameStore.gd.rollDice()
-          gameStore.gd.setLockedBitmap(0)
-          currentStage.value = GameStage.LOCK
+          //第三轮，全部锁定
+          if (gameGlobalInfo.value.currentRound == 3) {
+            gameStore.gd.setLockedBitmap(0b11111)
+            setTimeout(() => {
+              //最后一轮投掷结束
+              if (gameGlobalInfo.value.currentPlayerIndex === playerNumber.value - 1) {
+                dispatchAction({
+                  type: actTypes.ActionType.FINISH_GAME,
+                  id: null
+                })
+              }
+              else if (gameStore.mode == GameMode.OFFLINE) {
+                //下一位进行投掷
+                switchPlayer()
+                dispatchAction({
+                  type: actTypes.ActionType.ROLL_DICE,
+                  id: null
+                })
+              }
+            }, 1500)
+          }
+          else {
+            gameStore.gd.setLockedBitmap(0)
+            currentStage.value = GameStage.LOCK
+            showStageToast()
+          }
         }, 1500)
       }
       else {
-        //有投掷结果就自动切换到锁定阶段，这里比较特殊
+        //有投掷结果就自动切换到锁定阶段，仅限于对战模式，这里比较特殊
         if (action.param !== undefined) {
           gameStore.gd.rollDice(action.param)
-          gameStore.gd.setLockedBitmap(0)
-          currentStage.value = GameStage.LOCK
+          //第三轮，全部锁定
+          if (gameGlobalInfo.value.currentRound == 3) {
+            gameStore.gd.setLockedBitmap(0b11111)
+            setTimeout(() => {
+              //最后一轮投掷结束
+              if (gameGlobalInfo.value.currentPlayerIndex === playerNumber.value - 1) {
+                dispatchAction({
+                  type: actTypes.ActionType.FINISH_GAME,
+                  id: null
+                })
+              }
+            }, 1500)
+          }
+          else {
+            gameStore.gd.setLockedBitmap(0)
+            currentStage.value = GameStage.LOCK
+            showStageToast()
+          }
         }
         else {
           currentStage.value = GameStage.ROLL
@@ -394,14 +464,15 @@ const dispatchAction = action => {
       gameStore.gd.setLockedBitmap(action.param, playerIndex)
       break;
     case actTypes.ActionType.DOUBLE:
+      //无倍数传入，初始化并切换加倍阶段
       if (action.param === undefined) {
-        if (action.id === null) switchPlayer()
+        actionMultiplier.value = 0
         currentStage.value = GameStage.DOUBLE
+        showStageToast()
       }
       else {
         gameStore.gd.double(action.param)
-        let playerLen = gameStore.gd.getPlayerDataAll().length
-        if (gameGlobalInfo.value.currentPlayerIndex === playerLen - 1) {
+        if (gameGlobalInfo.value.currentPlayerIndex === playerNumber.value - 1) {
           dispatchAction({
             type: actTypes.ActionType.FINISH_ROUND,
             id: null
@@ -410,25 +481,30 @@ const dispatchAction = action => {
         else if (isCurrentPlayerTurn.value) {
           switchPlayer()
           dispatchAction({
-            type: actTypes.ActionType.ROLL_DICE,
-            id: gameStore.gd.getPlayerData().id
+            type: actTypes.ActionType.DOUBLE,
+            id: null
           })
         }
       }
       break
     case actTypes.ActionType.FINISH_ROUND:
       gameStore.gd.finishRound()
+      Taro.showToast({
+        title: `第${gameGlobalInfo.value.currentRound}/3轮`,
+        icon: 'none'
+      })
       if (isCurrentPlayerTurn.value) {
-        switchPlayer()
         if (gameStore.mode === GameMode.OFFLINE) {
+          switchPlayer()
           dispatchAction({
             type: actTypes.ActionType.ROLL_DICE,
-            id: gameStore.gd.getPlayerData().id
+            id: null
           })
         }
       }
       break
     case actTypes.ActionType.FINISH_GAME:
+
       break
   }
 }
