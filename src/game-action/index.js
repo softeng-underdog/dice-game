@@ -6,7 +6,7 @@
 /**
  * @typedef GameAction 游戏动作
  * @property {ActionType} type 动作类型
- * @property {string} id 玩家ID
+ * @property {string?} id 玩家ID
  * @property {any} param 附加数据
  */
 
@@ -17,7 +17,7 @@
  */
 export const ActionType = {
     /**
-     * 投掷骰子，param若为number[]，则表示投掷结果
+     * 投掷骰子，param若为number[]，则表示投掷结果，为undefined表示仅切换到投掷阶段
      */
     ROLL_DICE: 0,
     /**
@@ -25,7 +25,7 @@ export const ActionType = {
      */
     LOCK_DICE: 1,
     /**
-     * 加倍，param为number，表示所加倍数
+     * 加倍，param为number，表示所加倍数，为undefined表示仅切换到加倍阶段
      */
     DOUBLE: 2,
     /**

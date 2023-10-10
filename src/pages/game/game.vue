@@ -25,7 +25,7 @@
       </view>
       <view class="action-area">
         <view v-if="showLockControl" class="action-common-area">
-          <text class="game-btn">确认锁定</text>
+          <text class="game-btn" @tap="finishLockSelection">确认锁定</text>
         </view>
         <view v-if="showDoubleControl" class="action-common-area">
           <image class="svg-btn" src="../../images/game-control/minus-btn.svg" @tap="decMultiplier" />
@@ -175,7 +175,7 @@ const knockoutPlayerStr = computed(() => {
 /**
  * 当前游戏阶段
  */
-const currentStage = ref(GameStage.LOCK)
+const currentStage = ref(GameStage.ROLL)
 
 /**
  * 当前游戏视图
@@ -210,14 +210,14 @@ const lockedDiceIndices = computed(() => {
   return indices
 })
 
-watch(countdown, updateTitle)
-watch(currentStage, updateTitle)
-watch(gameStore.gd.getPlayerData(), updateTitle)
+watch(countdown, () => updateTitle())
+watch(currentStage, () => updateTitle())
+watch(() => gameStore.gd.getPlayerData(), () => updateTitle())
 
 /**
  * 更新标题
  */
-const updateTitle = (ov, nv) => {
+const updateTitle = () => {
   let playerName = gameStore.gd.getPlayerData().name
   let stageStr = stageStrTable[currentStage.value]
   Taro.setNavigationBarTitle({title: `${playerName} - ${stageStr} - 10`})
@@ -252,6 +252,13 @@ const showAutoControl = computed(() => {
   }
   return viewPlayerIndex.value === gameStore.playerIndex
     && gameStore.getPlayerAuto(gameStore.playerIndex)
+})
+
+/**
+ * 是否是该客户端玩家的回合
+ */
+const isCurrentPlayerTurn = computed(() => {
+  return gameGlobalInfo.value.currentPlayerIndex === gameStore.playerIndex
 })
 
 /**
@@ -301,24 +308,128 @@ const lockDice = index => {
 }
 
 /**
+ * 切换当前玩家的数据索引，同时根据模式设置游戏存储的playerIndex，以及切换玩家视图
+ * @param {number} index 玩家数据索引，若为-1，则循环选取下一位玩家
+ */
+const switchPlayer = (index = -1) => {
+  let doSwitchView = viewPlayerIndex.value == gameGlobalInfo.value.currentPlayerIndex
+  gameStore.gd.switchPlayer(index)
+  if (doSwitchView || isCurrentPlayerTurn.value)
+    switchPlayerView(gameGlobalInfo.value.currentPlayerIndex)
+  if (gameStore.mode === GameMode.OFFLINE) {
+    gameStore.playerIndex = gameGlobalInfo.value.currentPlayerIndex
+  }
+}
+
+/**
+ * 完成锁定动作
+ */
+const finishLockSelection = () => {
+  let playerLen = gameStore.gd.getPlayerDataAll().length
+  if (gameGlobalInfo.value.currentPlayerIndex === playerLen - 1) {
+    //转加倍阶段
+    dispatchAction({
+      type: actTypes.ActionType.DOUBLE,
+      id: null
+    })
+  }
+  else {
+    switchPlayer()
+    dispatchAction({
+      type: actTypes.ActionType.ROLL_DICE,
+      id: null
+    })
+  }
+}
+
+/**
+ * 投递骰子投掷动作
+ */
+const rollDice = () => {
+  dispatchAction({
+    type: actTypes.ActionType.ROLL_DICE,
+    id: viewPlayerData.value.id
+  })
+}
+
+/**
  * 根据游戏动作更改页面状态
  * @param {actTypes.GameAction} action 游戏动作
  */
-const dispatchAction = (action) => {
+const dispatchAction = action => {
   let playerIndex = -1;
-  let playerDataList = gameStore.gd.getPlayerDataAll()
-  for (let i = 0; i < playerDataList.length; i++) {
-    if (playerDataList[i].id == action.id) {
-      playerIndex = i;
-      break;
+  if (action.id !== null) {
+    let playerDataList = gameStore.gd.getPlayerDataAll()
+    for (let i = 0; i < playerDataList.length; i++) {
+      if (playerDataList[i].id == action.id) {
+        playerIndex = i;
+        switchPlayer(playerIndex)
+        break;
+      }
     }
   }
-  if (gameStore.mode === GameMode.OFFLINE) {
-    switch(action.type) {
-      case actTypes.ActionType.LOCK_DICE:
-        gameStore.gd.setLockedBitmap(action.param, playerIndex)
-        break;
-    }
+  switch(action.type) {
+    case actTypes.ActionType.ROLL_DICE:
+      if (isCurrentPlayerTurn.value) {
+        currentStage.value = GameStage.ROLL
+        setTimeout(() => {
+          let rollResult = gameStore.gd.rollDice()
+          gameStore.gd.setLockedBitmap(0)
+          currentStage.value = GameStage.LOCK
+        }, 1500)
+      }
+      else {
+        //有投掷结果就自动切换到锁定阶段，这里比较特殊
+        if (action.param !== undefined) {
+          gameStore.gd.rollDice(action.param)
+          gameStore.gd.setLockedBitmap(0)
+          currentStage.value = GameStage.LOCK
+        }
+        else {
+          currentStage.value = GameStage.ROLL
+        }
+      }
+      break;
+    case actTypes.ActionType.LOCK_DICE:
+      gameStore.gd.setLockedBitmap(action.param, playerIndex)
+      break;
+    case actTypes.ActionType.DOUBLE:
+      if (action.param === undefined) {
+        if (action.id === null) switchPlayer()
+        currentStage.value = GameStage.DOUBLE
+      }
+      else {
+        gameStore.gd.double(action.param)
+        let playerLen = gameStore.gd.getPlayerDataAll().length
+        if (gameGlobalInfo.value.currentPlayerIndex === playerLen - 1) {
+          dispatchAction({
+            type: actTypes.ActionType.FINISH_ROUND,
+            id: null
+          })
+        }
+        else if (isCurrentPlayerTurn.value) {
+          switchPlayer()
+          dispatchAction({
+            type: actTypes.ActionType.ROLL_DICE,
+            id: gameStore.gd.getPlayerData().id
+          })
+        }
+      }
+      break
+    case actTypes.ActionType.FINISH_ROUND:
+      gameStore.gd.finishRound()
+      if (isCurrentPlayerTurn.value) {
+        switchPlayer()
+        if (gameStore.mode === GameMode.OFFLINE) {
+          dispatchAction({
+            type: actTypes.ActionType.ROLL_DICE,
+            id: gameStore.gd.getPlayerData().id
+          })
+        }
+      }
+      break
+    case actTypes.ActionType.FINISH_GAME:
+      break
   }
 }
 
@@ -342,6 +453,10 @@ let actionMultiplierText = computed(() => {
 useLoad(() => {
   Taro.hideHomeButton()
   updateTitle()
+  switchPlayerView(gameStore.playerIndex)
+  if (isCurrentPlayerTurn.value) {
+    rollDice()
+  }
 })
 
 </script>
