@@ -280,7 +280,8 @@ class GameData {
         let chipDifference = [];
         let knockoutPlayerIndex = [];
         let getchips = 0;//最高分玩家赢得的筹码数
-        for(let i = 1;i < length;i ++){//寻找最高分
+        for(let i = 1;i < length;i ++){//寻找最高分，并初始化位图
+            this.setLockedBitmap(0, i)
             if(totalscore[i].totalScore > maxScore){
                 maxScore = totalscore[i].totalScore;
             }
@@ -318,7 +319,7 @@ class GameData {
 
         this.multiplier = 1;
         this.currentRound = 1;
-        this.currentGame ++;
+        this.currentGame  = Math.min(this.games, this.currentGame + 1);
         return {
             topPlayerIndex,
             topPlayerData,

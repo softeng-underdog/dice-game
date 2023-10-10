@@ -42,7 +42,7 @@
     <view v-if="currentView === GameView.PLAYER_LIST" class="player-view">
       <player-card v-for="(playerData, index) of gameStore.gd.getPlayerDataAll()" class="player-card-margin" :key="globalStore.getGlobalKey(index)"
         :name="playerData.name" :avatar="playerData.avatar" :chips="playerData.chips" :score="gameStore.gd.getPlayerScoreInfo(index).totalScore"
-        :dice-data="playerData.diceData" @tap-card="switchPlayerView(index)" />
+        :dice-data="playerData.diceData" @tap-card="switchPlayerView(index)" :top-player="index === topPlayerIndex" />
     </view>
 
     <view v-if="currentView === GameView.KNOCKOUT" class="end-view">
@@ -160,6 +160,20 @@ const viewPlayerScoreInfo = computed(() => {
 })
 
 /**
+ * 筹码数最高的玩家数据索引
+ */
+const topPlayerIndex = computed(() => {
+  let index = -1, topChips = 0 
+  gameStore.gd.getPlayerDataAll().forEach((data, i) => {
+    if (data.chips > topChips) {
+      topChips = data.chips
+      index = i
+    }
+  })
+  return index
+})
+
+/**
  * 击飞玩家的数据索引列表
  */
 const knockoutPlayerIndex = ref([])
@@ -181,11 +195,6 @@ const currentStage = ref(GameStage.ROLL)
  * 当前游戏视图
  */
 let currentView = ref(GameView.MAIN)
-
-/**
- * 当前倒计时
- */
-const countdown = ref(10)
 
 /**
  * 投掷区骰子索引列表
@@ -213,6 +222,7 @@ const lockedDiceIndices = computed(() => {
 watch(countdown, () => updateTitle())
 watch(currentStage, () => updateTitle())
 watch(() => gameStore.gd.getPlayerData(), () => updateTitle())
+watch(currentView, () => redirectRank())
 
 /**
  * 更新标题
@@ -221,6 +231,19 @@ const updateTitle = () => {
   let playerName = gameStore.gd.getPlayerData().name
   let stageStr = stageStrTable[currentStage.value]
   Taro.setNavigationBarTitle({title: `${playerName} - ${stageStr}`})
+}
+
+/**
+ * 出现游戏结束的视图时跳转到结算页面
+ */
+const redirectRank = () => {
+  if (currentView.value == GameView.KNOCKOUT || currentView.value == GameView.GAME_OVER) {
+    setTimeout(() => {
+      Taro.reLaunch({
+        url: '/pages/game/rank'
+      })
+    }, 5000)
+  }
 }
 
 /**
@@ -429,6 +452,7 @@ const dispatchAction = action => {
             gameStore.gd.setLockedBitmap(0)
             currentStage.value = GameStage.LOCK
             showStageToast()
+
           }
         }, 1500)
       }
@@ -480,10 +504,13 @@ const dispatchAction = action => {
         }
         else if (isCurrentPlayerTurn.value) {
           switchPlayer()
-          dispatchAction({
-            type: actTypes.ActionType.DOUBLE,
-            id: null
-          })
+          //避免递归
+          setTimeout(() => {
+            dispatchAction({
+              type: actTypes.ActionType.DOUBLE,
+              id: null
+            })
+          }, 0)
         }
       }
       break
@@ -496,15 +523,46 @@ const dispatchAction = action => {
       if (isCurrentPlayerTurn.value) {
         if (gameStore.mode === GameMode.OFFLINE) {
           switchPlayer()
+          setTimeout(() => {
+            dispatchAction({
+              type: actTypes.ActionType.ROLL_DICE,
+              id: null
+            })
+          }, 0)
+        }
+      }
+      break
+    case actTypes.ActionType.FINISH_GAME:
+      let lastGame = gameGlobalInfo.value.currentGame == gameGlobalInfo.value.games;
+      /**
+       * @type {gdTypes.AllocateInfo}
+       */
+      let allocateInfo = gameStore.gd.finishGame()
+      let totalChips = 0
+      let topPlayerNames = []
+      allocateInfo.chipDifference.forEach(diff => totalChips += diff)
+      allocateInfo.topPlayerData.forEach(data => topPlayerNames.push(data.name))
+      Taro.showToast({
+        title: `本局游戏结束，胜利者是${topPlayerNames.join('，')}，每位玩家赢得${totalChips}筹码`,
+        icon: 'none',
+        duration: 3000
+      })
+      setTimeout(() => {
+        if (allocateInfo.knockoutPlayerIndex.length !== 0) {
+          knockoutPlayerIndex.value = allocateInfo.knockoutPlayerIndex
+          currentView.value = GameView.KNOCKOUT
+        }
+        else if (lastGame) {
+          currentView.value = GameView.GAME_OVER
+        }
+        else {
+          switchPlayer()
           dispatchAction({
             type: actTypes.ActionType.ROLL_DICE,
             id: null
           })
         }
-      }
-      break
-    case actTypes.ActionType.FINISH_GAME:
-
+      } ,3000)
       break
   }
 }
