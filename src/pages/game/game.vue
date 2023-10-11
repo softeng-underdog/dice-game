@@ -33,9 +33,9 @@
           <image class="svg-btn" src="../../images/game-control/plus-btn.svg" @tap="incMultiplier" />
         </view>
         <view v-if="showAutoControl" class="action-common-area">
-          <text class="game-btn">取消托管</text>
+          <text class="game-btn" @tap="toggleAuto">取消托管</text>
         </view>
-        <text v-if="!showAutoControl" class="auto-btn">托管</text>
+        <text v-if="!showAutoControl" class="auto-btn" @tap="toggleAuto" >托管</text>
       </view>
     </view>
 
@@ -356,6 +356,16 @@ const switchPlayerView = index => {
 }
 
 /**
+ * 异步延时
+ * @param {number} time 毫秒数
+ */
+const sleep = async time => {
+  return new Promise(resolve => {
+    setTimeout(resolve, time)
+  })
+}
+
+/**
  * 锁定指定骰子
  * @param {number} index 骰子索引
  */
@@ -443,10 +453,17 @@ const double = () => {
 }
 
 /**
+ * 切换托管模式
+ */
+const toggleAuto = () => {
+  gameStore.togglePlayerAuto(viewPlayerIndex.value)
+}
+
+/**
  * 根据游戏动作更改页面状态
  * @param {actTypes.GameAction} action 游戏动作
  */
-const dispatchAction = action => {
+const dispatchAction = async action => {
   let playerIndex = -1;
   if (action.id !== null) {
     let playerDataList = gameStore.gd.getPlayerDataAll()
@@ -462,36 +479,35 @@ const dispatchAction = action => {
     case actTypes.ActionType.ROLL_DICE:
       if (isCurrentPlayerTurn.value) {
         currentStage.value = GameStage.ROLL
-        setTimeout(() => {
-          let rollResult = gameStore.gd.rollDice()
-          //第三轮，全部锁定
-          if (gameGlobalInfo.value.currentRound == 3) {
-            gameStore.gd.setLockedBitmap(0b11111)
-            setTimeout(() => {
-              //最后一轮投掷结束
-              if (gameGlobalInfo.value.currentPlayerIndex === playerNumber.value - 1) {
-                dispatchAction({
-                  type: actTypes.ActionType.FINISH_GAME,
-                  id: null
-                })
-              }
-              else if (gameStore.mode == GameMode.OFFLINE) {
-                //下一位进行投掷
-                switchPlayer()
-                dispatchAction({
-                  type: actTypes.ActionType.ROLL_DICE,
-                  id: null
-                })
-              }
-            }, 1500)
+        await sleep(1500)
+        let rollResult = gameStore.gd.rollDice()
+        //第三轮，全部锁定
+        if (gameGlobalInfo.value.currentRound == 3) {
+          gameStore.gd.setLockedBitmap(0b11111)
+          await sleep(1500)
+          //最后一轮投掷结束
+          if (gameGlobalInfo.value.currentPlayerIndex === playerNumber.value - 1) {
+            dispatchAction({
+              type: actTypes.ActionType.FINISH_GAME,
+              id: null
+            })
           }
-          else {
-            //否则正常进入锁定阶段并刷新固定骰子
-            fixLockedDice()
-            currentStage.value = GameStage.LOCK
-            showStageToast()
+          else if (gameStore.mode == GameMode.OFFLINE) {
+            //下一位进行投掷
+            switchPlayer()
+            dispatchAction({
+              type: actTypes.ActionType.ROLL_DICE,
+              id: null
+            })
           }
-        }, 1500)
+        }
+        else {
+          //否则正常进入锁定阶段并刷新固定骰子
+          fixLockedDice()
+          currentStage.value = GameStage.LOCK
+          showStageToast()
+          
+        }
       }
       else {
         //有投掷结果就自动切换到锁定阶段，仅限于对战模式，这里比较特殊
@@ -500,15 +516,14 @@ const dispatchAction = action => {
           //第三轮，全部锁定
           if (gameGlobalInfo.value.currentRound == 3) {
             gameStore.gd.setLockedBitmap(0b11111)
-            setTimeout(() => {
-              //最后一轮投掷结束
-              if (gameGlobalInfo.value.currentPlayerIndex === playerNumber.value - 1) {
-                dispatchAction({
-                  type: actTypes.ActionType.FINISH_GAME,
-                  id: null
-                })
-              }
-            }, 1500)
+            await sleep(1500)
+            //最后一轮投掷结束
+            if (gameGlobalInfo.value.currentPlayerIndex === playerNumber.value - 1) {
+              dispatchAction({
+                type: actTypes.ActionType.FINISH_GAME,
+                id: null
+              })
+            }
           }
           else {
             fixLockedDice()
@@ -541,13 +556,10 @@ const dispatchAction = action => {
         }
         else if (isCurrentPlayerTurn.value) {
           switchPlayer()
-          //避免递归
-          setTimeout(() => {
-            dispatchAction({
-              type: actTypes.ActionType.DOUBLE,
-              id: null
-            })
-          }, 0)
+          dispatchAction({
+            type: actTypes.ActionType.DOUBLE,
+            id: null
+          })
         }
       }
       break
@@ -560,12 +572,10 @@ const dispatchAction = action => {
       if (isCurrentPlayerTurn.value) {
         if (gameStore.mode === GameMode.OFFLINE) {
           switchPlayer()
-          setTimeout(() => {
-            dispatchAction({
-              type: actTypes.ActionType.ROLL_DICE,
-              id: null
-            })
-          }, 0)
+          dispatchAction({
+            type: actTypes.ActionType.ROLL_DICE,
+            id: null
+          })
         }
       }
       break
@@ -585,22 +595,21 @@ const dispatchAction = action => {
         icon: 'none',
         duration: 3000
       })
-      setTimeout(() => {
-        if (allocateInfo.knockoutPlayerIndex.length !== 0) {
-          knockoutPlayerIndex.value = allocateInfo.knockoutPlayerIndex
-          currentView.value = GameView.KNOCKOUT
-        }
-        else if (lastGame) {
-          currentView.value = GameView.GAME_OVER
-        }
-        else {
-          switchPlayer()
-          dispatchAction({
-            type: actTypes.ActionType.ROLL_DICE,
-            id: null
-          })
-        }
-      } ,3000)
+      await sleep(2500)
+      if (allocateInfo.knockoutPlayerIndex.length !== 0) {
+        knockoutPlayerIndex.value = allocateInfo.knockoutPlayerIndex
+        currentView.value = GameView.KNOCKOUT
+      }
+      else if (lastGame) {
+        currentView.value = GameView.GAME_OVER
+      }
+      else {
+        switchPlayer()
+        dispatchAction({
+          type: actTypes.ActionType.ROLL_DICE,
+          id: null
+        })
+      }
       break
   }
 }
@@ -626,7 +635,6 @@ const genCPUDecision = () => {
             }
         }
     }
-    let rate = rank/allplayer.length;//当前玩家总分在所有玩家的前百分之多少
 
     if (currentStage.value === GameStage.LOCK){
         let lockedDiceIndicesValue = [...lockedDiceIndices.value];
