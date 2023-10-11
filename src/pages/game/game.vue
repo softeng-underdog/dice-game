@@ -197,14 +197,18 @@ const currentStage = ref(GameStage.ROLL)
 let currentView = ref(GameView.MAIN)
 
 /**
+ * 固定在锁定区的骰子
+ */
+let fixedDiceIndices = ref([])
+
+/**
  * 投掷区骰子索引列表
  */
 const freeDiceIndices = computed(() => {
-  let indices = []
-  for (let i = 0; i < 5; i++) {
-    if (!gameStore.gd.getLockedByIndex(i, viewPlayerIndex.value))
-      indices.push(i)
-  }
+  let indices = [0, 1, 2, 3, 4]
+  indices = indices.filter(i => {
+    return lockedDiceIndices.value.indexOf(i) == -1
+  })
   return indices
 })
 
@@ -212,14 +216,27 @@ const freeDiceIndices = computed(() => {
  * 锁定区骰子索引列表
  */
 const lockedDiceIndices = computed(() => {
-  let indices = [0, 1, 2, 3, 4]
-  indices = indices.filter(i => {
-    return freeDiceIndices.value.indexOf(i) == -1
-  })
+  let indices = [...fixedDiceIndices.value]
+  for (let i = 0; i < 5; i++) {
+    if (gameStore.gd.getLockedByIndex(i, viewPlayerIndex.value)
+      && fixedDiceIndices.value.indexOf(i) === -1)
+      indices.push(i)
+  }
   return indices
 })
 
-watch(countdown, () => updateTitle())
+/**
+ * 固定当前锁定区内所有的骰子
+ */
+const fixLockedDice = () => {
+  let indices = []
+  for (let i = 0; i < 5; i++) {
+    if (gameStore.gd.getLockedByIndex(i, viewPlayerIndex.value))
+      indices.push(i)
+  }
+  fixedDiceIndices.value = indices
+}
+
 watch(currentStage, () => updateTitle())
 watch(() => gameStore.gd.getPlayerData(), () => updateTitle())
 watch(currentView, () => redirectRank())
@@ -340,6 +357,7 @@ const lockDice = index => {
  */
  const freeDice = index => {
   if (!showLockControl.value) return
+  if (fixedDiceIndices.value.indexOf(index) !== -1) return
   let bitmap = viewPlayerData.value.diceLockedBitmap & ~(1 << index)
   dispatchAction({
     type: actTypes.ActionType.LOCK_DICE,
@@ -355,8 +373,9 @@ const lockDice = index => {
 const switchPlayer = (index = -1) => {
   let doSwitchView = viewPlayerIndex.value == gameGlobalInfo.value.currentPlayerIndex
   gameStore.gd.switchPlayer(index)
-  if (doSwitchView || isCurrentPlayerTurn.value)
+  if (doSwitchView || isCurrentPlayerTurn.value) {
     switchPlayerView(gameGlobalInfo.value.currentPlayerIndex)
+  }
   if (gameStore.mode === GameMode.OFFLINE) {
     gameStore.playerIndex = gameGlobalInfo.value.currentPlayerIndex
   }
@@ -449,10 +468,10 @@ const dispatchAction = action => {
             }, 1500)
           }
           else {
-            gameStore.gd.setLockedBitmap(0)
+            //否则正常进入锁定阶段并刷新固定骰子
+            fixLockedDice()
             currentStage.value = GameStage.LOCK
             showStageToast()
-
           }
         }, 1500)
       }
@@ -474,7 +493,7 @@ const dispatchAction = action => {
             }, 1500)
           }
           else {
-            gameStore.gd.setLockedBitmap(0)
+            fixLockedDice()
             currentStage.value = GameStage.LOCK
             showStageToast()
           }
@@ -540,6 +559,7 @@ const dispatchAction = action => {
       let allocateInfo = gameStore.gd.finishGame()
       let totalChips = 0
       let topPlayerNames = []
+      fixedDiceIndices.value = []
       allocateInfo.chipDifference.forEach(diff => totalChips += diff)
       allocateInfo.topPlayerData.forEach(data => topPlayerNames.push(data.name))
       Taro.showToast({
