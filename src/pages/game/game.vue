@@ -187,6 +187,11 @@ const knockoutPlayerStr = computed(() => {
 })
 
 /**
+ * 游戏是否中止
+ */
+const gameAbort = ref(false)
+
+/**
  * 当前游戏阶段
  */
 const currentStage = ref(GameStage.ROLL)
@@ -248,6 +253,7 @@ const exitGame = () => {
     cancelText: '否'
   }).then(result => {
     if (result.confirm) {
+      gameAbort.value = true
       Taro.reLaunch({
         url: '/pages/home/home'
       })
@@ -491,8 +497,11 @@ const autoLock = async () => {
   await sleep(3000)
   if (gameStore.getPlayerAuto(viewPlayerIndex.value)) {
     inAutoCriticalArea.value = true
-    let bitmap = genCPUDecision()
-    gameStore.gd.setLockedBitmap(bitmap)
+    let lockList = genCPUDecision()
+    console.log(lockList)
+    for (let i of lockList) {
+      gameStore.gd.toggleLockedByIndex(i)
+    }
     await sleep(3000)
     inAutoCriticalArea.value = false
     finishLockSelection()
@@ -519,6 +528,7 @@ const autoDouble = async () => {
  * @param {actTypes.GameAction} action 游戏动作
  */
 const dispatchAction = async action => {
+  if (gameAbort.value) return
   let playerIndex = -1;
   if (action.id !== null) {
     let playerDataList = gameStore.gd.getPlayerDataAll()
@@ -677,7 +687,7 @@ const dispatchAction = async action => {
 
 /**
  * 获取当前游戏阶段的CPU决策
- * @returns {number} 如果阶段为LOCK，返回决策的锁定位图；如果阶段为DOUBLE，返回决策的加倍数
+ * @returns {number | number[]} 如果阶段为LOCK，返回决策的锁定位图；如果阶段为DOUBLE，返回决策的加倍数
  */
 const genCPUDecision = () => {
   let currentround = gameGlobalInfo.value.currentRound;//获取当前轮数，这里不知有没有问题
@@ -949,24 +959,17 @@ const genCPUDecision = () => {
         }
         // console.log(index);
         // console.log(result[index]);//输出要锁定的骰子
-        let bitmap = 0;
-        let diceTypeNum = [0,0,0,0,0,0,0];//用于记录每种骰子的数量
-        let concatenatedArray = lockedDiceData.concat(result[index]);
-        concatenatedArray.sort();
-        for(let i = 0;i < concatenatedArray.length;i ++){
-            diceTypeNum[concatenatedArray[i]] ++;
-        }
-        for(let i = 0;i < concatenatedArray.length;i++){
-            for(let k = 1;k < 7;k++){
-                if(concatenatedArray[i] == k && diceTypeNum[k] > 0){
-                    diceTypeNum[k] --;
-                    bitmap += Math.pow(2,i);
+        let diceindex = [];
+        for(let i = 0;i < result[index].length;i++){
+            for(let k = 0;k < freeDiceData.length;k++){
+                if(result[index][i] == freeDiceData[k]){
+                    diceindex.push(k)
+                    freeDiceData[k] = 0;
                     break;
                 }
             }
         }
-        console.log(bitmap);
-        return bitmap;
+        return diceindex;
     }
     else {
         if(rank == 1){
