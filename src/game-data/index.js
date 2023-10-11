@@ -342,6 +342,7 @@ class GameData {
      * @returns {number[]} 投掷结果
      */
     rollDice(rollResult = null, playerIndex = -1) {
+        let freeDiceData = []
         if(rollResult != null && rollResult.length != 5){
             throw new Error("rollResult length error")
         }
@@ -365,10 +366,17 @@ class GameData {
             for(let i = 0;i < 5;i++){
                 if((this.playerData[playerIndex].diceLockedBitmap & (1 << i)) == 0){//未锁定状态
                     this.playerData[playerIndex].diceData[i] = Math.round(Math.random()*5+1);
+                    freeDiceData.push(this.playerData[playerIndex].diceData[i])
                 }
             }
         }
-        this.playerData[playerIndex].diceData.sort();
+        freeDiceData.sort();
+        let fdIndex = 0;
+        for(let i = 0;i < 5;i++){
+            if((this.playerData[playerIndex].diceLockedBitmap & (1 << i)) == 0){//未锁定状态
+                this.playerData[playerIndex].diceData[i] = freeDiceData[fdIndex++];
+            }
+        }
         return [...this.playerData[playerIndex].diceData];
     }
 
