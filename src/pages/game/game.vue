@@ -32,10 +32,10 @@
           <text class="game-btn" @tap="double">{{ actionMultiplierText }}</text>
           <image class="svg-btn" src="../../images/game-control/plus-btn.svg" @tap="incMultiplier" />
         </view>
-        <view v-if="showAutoControl" class="action-common-area">
-          <text v-show="!inAutoCriticalArea && !inThirdRound" class="game-btn" @tap="toggleAuto">取消托管</text>
+        <view v-if="showAutoControl && !inAutoCriticalArea && !viewPlayerData.isCPU" class="action-common-area">
+          <text class="game-btn" @tap="toggleAuto">取消托管</text>
         </view>
-        <text v-if="!showAutoControl && !inThirdRound" class="auto-btn" @tap="toggleAuto" >托管</text>
+        <text v-if="!showAutoControl && !viewPlayerData.isCPU" class="auto-btn" @tap="toggleAuto" >托管</text>
       </view>
     </view>
 
@@ -318,6 +318,7 @@ const showLockControl = computed(() => {
     && viewPlayerIndex.value === gameStore.playerIndex
     && !gameStore.getPlayerAuto(gameStore.playerIndex)
     && currentStage.value === GameStage.LOCK
+    && !viewPlayerData.value.isCPU
 })
 
 /**
@@ -328,10 +329,11 @@ const showDoubleControl = computed(() => {
     && viewPlayerIndex.value === gameStore.playerIndex
     && !gameStore.getPlayerAuto(gameStore.playerIndex)
     && currentStage.value === GameStage.DOUBLE
+    && !viewPlayerData.value.isCPU
 })
 
 /**
- * 是否显示取消托管控件
+ * 是否显示托管控件
  */
 const showAutoControl = computed(() => {
   if (gameStore.mode === GameMode.OFFLINE) {
@@ -339,6 +341,7 @@ const showAutoControl = computed(() => {
   }
   return viewPlayerIndex.value === gameStore.playerIndex
     && gameStore.getPlayerAuto(gameStore.playerIndex)
+    && !inThirdRound.value
 })
 
 /**
@@ -495,7 +498,7 @@ const toggleAuto = async () => {
  */
 const autoLock = async () => {
   await sleep(3000)
-  if (gameStore.getPlayerAuto(viewPlayerIndex.value)) {
+  if (gameStore.getPlayerAuto(viewPlayerIndex.value) || viewPlayerData.value.isCPU) {
     inAutoCriticalArea.value = true
     let lockList = genCPUDecision()
     console.log(lockList)
@@ -513,7 +516,7 @@ const autoLock = async () => {
  */
 const autoDouble = async () => {
   await sleep(3000)
-  if (gameStore.getPlayerAuto(viewPlayerIndex.value)) {
+  if (gameStore.getPlayerAuto(viewPlayerIndex.value) || viewPlayerData.value.isCPU) {
     let multiplierValue = genCPUDecision()
     dispatchAction({
       type: actTypes.ActionType.DOUBLE,
@@ -572,7 +575,8 @@ const dispatchAction = async action => {
           fixLockedDice()
           currentStage.value = GameStage.LOCK
           showStageToast()
-          if (gameStore.getPlayerAuto(viewPlayerIndex.value)) {
+          if (gameStore.getPlayerAuto(gameGlobalInfo.value.currentPlayerIndex) ||
+            gameStore.gd.getPlayerData().isCPU) {
             await autoLock()
           }
         }
@@ -613,7 +617,9 @@ const dispatchAction = async action => {
         actionMultiplier.value = 0
         currentStage.value = GameStage.DOUBLE
         showStageToast()
-        if (isCurrentPlayerTurn.value && gameStore.getPlayerAuto(gameGlobalInfo.value.currentPlayerIndex)) {
+        if (isCurrentPlayerTurn.value && 
+          (gameStore.getPlayerAuto(gameGlobalInfo.value.currentPlayerIndex) || 
+          gameStore.gd.getPlayerData().isCPU)) {
           await autoDouble()
         }
       }
@@ -687,7 +693,7 @@ const dispatchAction = async action => {
 
 /**
  * 获取当前游戏阶段的CPU决策
- * @returns {number | number[]} 如果阶段为LOCK，返回决策的锁定位图；如果阶段为DOUBLE，返回决策的加倍数
+ * @returns {number | number[]} 如果阶段为LOCK，返回决策的锁定骰子索引列表；如果阶段为DOUBLE，返回决策的加倍数
  */
 const genCPUDecision = () => {
   let currentround = gameGlobalInfo.value.currentRound;//获取当前轮数，这里不知有没有问题

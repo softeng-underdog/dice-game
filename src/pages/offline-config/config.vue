@@ -65,7 +65,7 @@ const startGame = async () => {
       id: `cpu${i}`,
       name: `机器人${i + 1}`,
       avatar: globalStore.aiAvatar,
-      isCPU: false
+      isCPU: true
     })
   }
   gameStore.gd.initMatch(gameNumber.value, chipNumber.value, playerDescriptors)
