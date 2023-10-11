@@ -146,11 +146,12 @@ class GameData {
         let bonusscore = 0;
         let dicescore = 0;
         let totalscore = 0;
+        let sortedDiceData = [...this.playerData[playerIndex].diceData].sort()
         /**
          * 计算骰子点数和
          */
         for(let i = 0;i < 5;i ++){//骰子点数和
-            dicescore += this.playerData[playerIndex].diceData[i];
+            dicescore += sortedDiceData[i];
         }
 
         /**
@@ -158,7 +159,7 @@ class GameData {
          */
         let diceTypeNum = [0,0,0,0,0,0,0];//用于记录每种骰子的数量
         for(let i = 0;i < 5;i ++){
-            diceTypeNum[this.playerData[playerIndex].diceData[i]] += 1;
+            diceTypeNum[sortedDiceData[i]] += 1;
         }
         let sum1 = 0;//用于判断是否大顺子
         for(let i = 1;i < 6;i ++){
@@ -271,6 +272,7 @@ class GameData {
         let length = this.playerData.length;
         let totalscore = [];//储存每位玩家的分数情况
         for(let i = 0;i < length;i++){
+            this.setLockedBitmap(0, i)
             let scoreinfo = this.getPlayerScoreInfo(i);
             totalscore.push(scoreinfo);
         }
@@ -281,7 +283,6 @@ class GameData {
         let knockoutPlayerIndex = [];
         let getchips = 0;//最高分玩家赢得的筹码数
         for(let i = 1;i < length;i ++){//寻找最高分，并初始化位图
-            this.setLockedBitmap(0, i)
             if(totalscore[i].totalScore > maxScore){
                 maxScore = totalscore[i].totalScore;
             }
