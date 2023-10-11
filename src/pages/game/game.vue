@@ -1,7 +1,7 @@
 <template>
   <view class="page-game">
     <game-info :avatar="viewPlayerData.avatar" :multiplier="gameGlobalInfo.multiplier" :current-game="gameGlobalInfo.currentGame"
-      :games="gameGlobalInfo.games" @toggle-view="togglePlayerListView" />
+      :games="gameGlobalInfo.games" @toggle-view="togglePlayerListView" @tap-exit="exitGame" />
     <view v-if="currentView === GameView.MAIN" class="game-view">
       <view class="game-area">
         <view class="free-area">
@@ -224,6 +224,24 @@ const lockedDiceIndices = computed(() => {
   }
   return indices
 })
+
+/**
+ * 退出本次游戏
+ */
+const exitGame = () => {
+  Taro.showModal({
+    title: '退出游戏',
+    content: '你确定要退出本次游戏？',
+    confirmText: '是',
+    cancelText: '否'
+  }).then(result => {
+    if (result.confirm) {
+      Taro.reLaunch({
+        url: '/pages/home/home'
+      })
+    }
+  })
+}
 
 /**
  * 固定当前锁定区内所有的骰子
