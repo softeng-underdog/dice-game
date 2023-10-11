@@ -610,12 +610,298 @@ const dispatchAction = action => {
  * @returns {number} 如果阶段为LOCK，返回决策的锁定位图；如果阶段为DOUBLE，返回决策的加倍数
  */
 const genCPUDecision = () => {
-  if (currentStage.value === GameStage.LOCK) {
-    gameStore.gd.getPlayerScoreInfo(7)
-  }
-  else {
+  let currentround = game.Globalinfo.currentRound;//获取当前轮数，这里不知有没有问题
 
-  }
+    let allplayer = gameStore.gd.getPlayerDataAll();//获取所有玩家的游戏数据
+    let playerdata = gameStore.gd.getPlayerData();//获取当前玩家游戏数据
+    let rank = allplayer.length;//预设当前玩家排名为最后一名
+    let rank1 = allplayer.length;//预设当前玩家排名为最后一名
+    for(let i = 0;i < allplayer.length; i++){
+        if(allplayer[i].id != playerdata.id){
+            if(gameStore.gd.getPlayerScoreInfo(i).totalScore < gameStore.gd.getPlayerScoreInfo().totalScore){//若这个人总分比当前玩家高
+                rank -= 1;//排名加一
+            }
+            else if(gameStore.gd.getPlayerScoreInfo(i).totalScore == gameStore.gd.getPlayerScoreInfo().totalScore){
+                rank1 -=1;//用于判断并列第一的情况
+            }
+        }
+    }
+    let rate = rank/allplayer.length;//当前玩家总分在所有玩家的前百分之多少
+
+    if (currentStage.value === GameStage.LOCK){
+        let lockedDiceIndicesValue = [...lockedDiceIndices.value];
+        let freeDiceIndicesValue = [...freeDiceIndices.value];
+        let num = 0;
+        let flag = 0;
+        for(let i = 4;i > 4 - lockedDiceIndicesValue.length;i --){
+            num += lockedDiceIndicesValue[flag] * Math.pow(6,i);
+            flag ++;
+        }
+
+        var result = []
+
+        function getPlayerScoreInfo(dicedata = []) {//用于判断总分
+            let bonusscore = 0;
+            let dicescore = 0;
+            let totalscore = 0;
+            /**
+             * 计算骰子点数和
+             */
+            for(let i = 0;i < 5;i ++){//骰子点数和
+                dicescore += dicedata[i];
+            }
+        
+            /**
+             * 接下来判断奖励分
+             */
+            let diceTypeNum = [0,0,0,0,0,0,0];//用于记录每种骰子的数量
+            for(let i = 0;i < 5;i ++){
+                diceTypeNum[dicedata[i]] += 1;
+            }
+            let sum1 = 0;//用于判断是否大顺子
+            for(let i = 1;i < 6;i ++){
+                if(diceTypeNum[i] == 1){
+                    sum1 ++;
+                    continue;
+                }
+                else {
+                    break;
+                }
+            }
+            let sum2 = 0;//用于判断是否大顺子
+            for(let i = 2;i < 7;i ++){
+                if(diceTypeNum[i] == 1){
+                    sum2 ++;
+                    continue;
+                }
+                else {
+                    break;
+                }
+            }
+            if(sum1 == 5 || sum2 == 5){//满足其一
+                bonusscore = 60;
+                totalscore = bonusscore + dicescore;
+                return totalscore
+            }
+        
+            for(let i = 1;i < 7;i ++){//其他奖励分类型
+                if(diceTypeNum[i] == 5){//五连
+                    bonusscore = 100;
+                    break;
+                }
+                else if(diceTypeNum[i] == 4){//四连
+                    bonusscore = 40;
+                    break;
+                }
+                else if(diceTypeNum[i] == 3){//三连或葫芦
+                    let flag = false;
+                    for(let j = 1;j < 7;j ++){
+                        if(diceTypeNum[j] == 2){//葫芦
+                            bonusscore = 20;
+                            flag = true;
+                        }
+                    }
+                    if(flag){
+                        break;
+                    }
+                    bonusscore = 10;//三连
+                    break;
+                }
+                else if(diceTypeNum[i] == 2){//双对
+                    for(let j = i + 1;j < 7;j ++){
+                        if(diceTypeNum[j] == 2){//双对
+                            bonusscore = 10;
+                            break;
+                        }
+                    }
+                }
+                let sum1 = 0;//小顺子1
+                let sum2 = 0;//小顺子2
+                let sum3 = 0;//小顺子3
+                for(let k = 1;k < 5;k++){//小顺子1
+                    if(diceTypeNum[k] >= 1){
+                        sum1 ++;
+                    }
+                };
+                for(let k = 2;k < 6;k++){//小顺子2
+                    if(diceTypeNum[k] >= 1){
+                        sum2 ++;
+                    }
+                };
+                for(let k = 3;k < 7;k++){//小顺子3
+                    if(diceTypeNum[k] >= 1){
+                        sum3 ++;
+                    }
+                };
+                if(sum1 == 4 || sum2 == 4 || sum3 == 4){
+                    bonusscore = 30;
+                    break;
+                }
+            }
+            totalscore = bonusscore + dicescore;
+            return totalscore;
+        }
+
+        for(let i = 0;i <= freeDiceIndicesValue.length;i ++){ //代表从一个投到free区的个数个
+
+
+            //selected数组包含已经选中的元素
+            //arr数组包含未选中元素数组，size表示还需选取元素的个数
+            function _combine(selected,arr,size){
+                //如果size===0，则一次组合完成，存入result数组并返回
+                if(size===0){
+                    result.push(selected)
+                    return
+                }
+                //遍历所有可能选中的元素，遍历的次数为数组长度减去(size-1)
+                for(let j = 0;j<arr.length-(size-1);j++){
+                    //复制数组，避免对selected数组数据的更改
+                    let temp = selected.slice()
+                    temp.push(arr[j])
+                    _combine(temp,arr.slice(j+1),size-1)
+                }
+            }
+
+            _combine([], freeDiceIndicesValue, i);
+
+        }
+
+
+        //console.log(result);
+
+
+        let keep = num;//保留num
+        let index = 0//result的下标，记录哪个期望最大
+        let expect = 0;//期望值
+        for(let i = 0;i < result.length; i ++){
+            
+            num = keep;
+            let lockbitnum = lockedDiceIndicesValue.length;
+            flag = 0;
+            for(let j = 4 - lockbitnum; j > 4 - lockbitnum - result[i].length;j --){
+                num += result[i][flag] * Math.pow(6,j);
+                flag ++;
+            }
+
+            if(freeDiceIndicesValue.length - result[i].length == 0){//没有可活动的骰子了
+                let concatenatedArray = lockedDiceIndicesValue.concat(result[i]);
+                let total = getPlayerScoreInfo(concatenatedArray);
+                if(total > expect){
+                    expect = total;
+                    index = i;
+                }
+            }
+            else if(freeDiceIndicesValue.length - result[i].length == 1){//还有一个可活动的骰子
+                let concatenatedArray = lockedDiceIndicesValue.concat(result[i]);
+                let total = 0;
+                for(let j = 1;j < 7;j ++){
+                    let newarr = [...concatenatedArray];
+                    newarr.push(j);
+                    total += getPlayerScoreInfo(newarr);
+                }
+                let average = total / 6;
+                if(average > expect){
+                    expect = average;
+                    index = i;
+                }
+            }
+            else if(freeDiceIndicesValue.length - result[i].length == 2){//还有两个可活动的骰子
+                let concatenatedArray = lockedDiceIndicesValue.concat(result[i]);
+                let total = 0;
+                for(let j = 1;j < 7;j ++){//倒数第二位骰子的数值
+                    for(let k = 1;k < 7;k ++){//倒数第一位骰子的数值
+                        let newarr = [...concatenatedArray];
+                        newarr.push(j);
+                        newarr.push(k);
+                        total += getPlayerScoreInfo(newarr);
+                    }
+                }
+                let average = total / 36;
+                if(average > expect){
+                    expect = average;
+                    index = i;
+                }
+            }
+            else if(freeDiceIndicesValue.length - result[i].length == 3){//还有三个可活动的骰子
+                let concatenatedArray = lockedDiceIndicesValue.concat(result[i]);
+                let total = 0;
+                for(let j = 1;j < 7;j ++){//倒数第三位骰子的数值
+                    for(let k = 1;k < 7;k ++){//倒数第二位骰子的数值
+                        for(let l = 1;l < 7;l ++){
+                            let newarr = [...concatenatedArray];
+                            newarr.push(j);
+                            newarr.push(k);
+                            newarr.push(l);
+                            total += getPlayerScoreInfo(newarr);
+                        }
+                    }
+                }
+                let average = total/216;
+                if(average > expect){
+                    expect = average;
+                    index = i;
+                }
+            }
+            else if(freeDiceIndicesValue.length - result[i].length == 4){//还有四个可活动的骰子
+                let concatenatedArray = lockedDiceIndicesValue.concat(result[i]);
+                let total = 0;
+                for(let j = 1;j < 7;j ++){//倒数第四位骰子的数值
+                    for(let k = 1;k < 7;k ++){//倒数第三位骰子的数值
+                        for(let l = 1;l < 7;l ++){//倒数第二位骰子的数值
+                            for(let m = 1;m < 7;m ++){//倒数第一位骰子的数值
+                                let newarr = [...concatenatedArray];
+                                newarr.push(j);
+                                newarr.push(k);
+                                newarr.push(l);
+                                newarr.push(m);
+                                total += getPlayerScoreInfo(newarr);
+                            }
+                        }
+                    }
+                }
+                let average = total/1296;
+                if(average > expect){
+                    expect = average;
+                    index = i;
+                }
+            }
+            else{//五个全摇
+                if(27.222 > expect){
+                    expect = 27.222;
+                    index = i;
+                }
+            }
+        }
+        // console.log(index);
+        // console.log(result[index]);//输出要锁定的骰子
+        let bitmap = 0;
+        let diceTypeNum = [0,0,0,0,0,0,0];//用于记录每种骰子的数量
+        let concatenatedArray = lockedDiceIndicesValue.concat(result[index]);
+        concatenatedArray.sort();
+        for(let i = 0;i < concatenatedArray.length;i ++){
+            diceTypeNum[concatenatedArray[i]] ++;
+        }
+        for(let i = 0;i < concatenatedArray.length;i++){
+            for(let k = 1;k < 7;k++){
+                if(concatenatedArray[i] == k && diceTypeNum[k] > 0){
+                    diceTypeNum[k] --;
+                    bitmap += Math.pow(2,i);
+                    break;
+                }
+            }
+        }
+        console.log(bitmap);
+        return bitmap;
+    }
+    else {
+        if(rank == 1){
+          return 3;
+        }
+        if(currentround == 3 && rank1 == 1){
+          return 3;
+        }
+        return 0;
+      }
 }
 
 const incMultiplier = () => {
