@@ -76,6 +76,10 @@ class GameData {
             };
             this.playerData.push(playerdata);
         }
+        this.multiplier = 1
+        this.currentGame = 1
+        this.currentRound = 1
+        this.currentPlayerIndex = 0
     }
 
     /**
