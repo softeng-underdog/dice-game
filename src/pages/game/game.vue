@@ -33,9 +33,9 @@
           <image class="svg-btn" src="../../images/game-control/plus-btn.svg" @tap="incMultiplier" />
         </view>
         <view v-if="showAutoControl" class="action-common-area">
-          <text class="game-btn" @tap="toggleAuto">取消托管</text>
+          <text v-show="!inAutoCriticalArea && !inThirdRound" class="game-btn" @tap="toggleAuto">取消托管</text>
         </view>
-        <text v-if="!showAutoControl" class="auto-btn" @tap="toggleAuto" >托管</text>
+        <text v-if="!showAutoControl && !inThirdRound" class="auto-btn" @tap="toggleAuto" >托管</text>
       </view>
     </view>
 
@@ -200,6 +200,18 @@ let currentView = ref(GameView.MAIN)
  * 固定在锁定区的骰子
  */
 let fixedDiceIndices = ref([])
+
+/**
+ * 托管是否无法打断
+ */
+let inAutoCriticalArea = ref(false)
+
+/**
+ * 是否在第三轮
+ */
+let inThirdRound = computed(() => {
+  return gameGlobalInfo.value.currentRound === 3
+})
 
 /**
  * 投掷区骰子索引列表
@@ -455,8 +467,51 @@ const double = () => {
 /**
  * 切换托管模式
  */
-const toggleAuto = () => {
+const toggleAuto = async () => {
   gameStore.togglePlayerAuto(viewPlayerIndex.value)
+  if (gameStore.getPlayerAuto(viewPlayerIndex.value) && viewPlayerIndex.value === gameGlobalInfo.value.currentPlayerIndex) {
+    if (currentStage.value === GameStage.LOCK) {
+      let originBitmap = 0
+      for (let i of fixedDiceIndices.value) {
+        originBitmap |= (1 << i);
+      }
+      gameStore.gd.setLockedBitmap(originBitmap)
+      await autoLock()
+    }
+    else if (currentStage.value === GameStage.DOUBLE) {
+      await autoDouble()
+    }
+  }
+}
+
+/**
+ * 托管锁定
+ */
+const autoLock = async () => {
+  await sleep(3000)
+  if (gameStore.getPlayerAuto(viewPlayerIndex.value)) {
+    inAutoCriticalArea.value = true
+    let bitmap = genCPUDecision()
+    gameStore.gd.setLockedBitmap(bitmap)
+    await sleep(3000)
+    inAutoCriticalArea.value = false
+    finishLockSelection()
+  }
+}
+
+/**
+ * 托管加倍
+ */
+const autoDouble = async () => {
+  await sleep(3000)
+  if (gameStore.getPlayerAuto(viewPlayerIndex.value)) {
+    let multiplierValue = genCPUDecision()
+    dispatchAction({
+      type: actTypes.ActionType.DOUBLE,
+      id: null,
+      param: multiplierValue
+    })
+  }
 }
 
 /**
@@ -480,6 +535,7 @@ const dispatchAction = async action => {
       if (isCurrentPlayerTurn.value) {
         currentStage.value = GameStage.ROLL
         await sleep(1500)
+        debugger
         let rollResult = gameStore.gd.rollDice()
         //第三轮，全部锁定
         if (gameGlobalInfo.value.currentRound == 3) {
@@ -506,7 +562,9 @@ const dispatchAction = async action => {
           fixLockedDice()
           currentStage.value = GameStage.LOCK
           showStageToast()
-          
+          if (gameStore.getPlayerAuto(viewPlayerIndex.value)) {
+            await autoLock()
+          }
         }
       }
       else {
@@ -545,6 +603,9 @@ const dispatchAction = async action => {
         actionMultiplier.value = 0
         currentStage.value = GameStage.DOUBLE
         showStageToast()
+        if (isCurrentPlayerTurn.value && gameStore.getPlayerAuto(gameGlobalInfo.value.currentPlayerIndex)) {
+          await autoDouble()
+        }
       }
       else {
         gameStore.gd.double(action.param)
@@ -619,7 +680,7 @@ const dispatchAction = async action => {
  * @returns {number} 如果阶段为LOCK，返回决策的锁定位图；如果阶段为DOUBLE，返回决策的加倍数
  */
 const genCPUDecision = () => {
-  let currentround = game.Globalinfo.currentRound;//获取当前轮数，这里不知有没有问题
+  let currentround = gameGlobalInfo.value.currentRound;//获取当前轮数，这里不知有没有问题
 
     let allplayer = gameStore.gd.getPlayerDataAll();//获取所有玩家的游戏数据
     let playerdata = gameStore.gd.getPlayerData();//获取当前玩家游戏数据
@@ -637,12 +698,18 @@ const genCPUDecision = () => {
     }
 
     if (currentStage.value === GameStage.LOCK){
-        let lockedDiceIndicesValue = [...lockedDiceIndices.value];
-        let freeDiceIndicesValue = [...freeDiceIndices.value];
+        let lockedDiceData = [];
+        let freeDiceData = [];
+        lockedDiceIndices.value.forEach(i => {
+          lockedDiceData.push(playerdata.diceData[i])
+        })
+        freeDiceIndices.value.forEach(i => {
+          freeDiceData.push(playerdata.diceData[i])
+        })
         let num = 0;
         let flag = 0;
-        for(let i = 4;i > 4 - lockedDiceIndicesValue.length;i --){
-            num += lockedDiceIndicesValue[flag] * Math.pow(6,i);
+        for(let i = 4;i > 4 - lockedDiceData.length;i --){
+            num += lockedDiceData[flag] * Math.pow(6,i);
             flag ++;
         }
 
@@ -750,7 +817,7 @@ const genCPUDecision = () => {
             return totalscore;
         }
 
-        for(let i = 0;i <= freeDiceIndicesValue.length;i ++){ //代表从一个投到free区的个数个
+        for(let i = 0;i <= freeDiceData.length;i ++){ //代表从一个投到free区的个数个
 
 
             //selected数组包含已经选中的元素
@@ -770,7 +837,7 @@ const genCPUDecision = () => {
                 }
             }
 
-            _combine([], freeDiceIndicesValue, i);
+            _combine([], freeDiceData, i);
 
         }
 
@@ -784,23 +851,23 @@ const genCPUDecision = () => {
         for(let i = 0;i < result.length; i ++){
             
             num = keep;
-            let lockbitnum = lockedDiceIndicesValue.length;
+            let lockbitnum = lockedDiceData.length;
             flag = 0;
             for(let j = 4 - lockbitnum; j > 4 - lockbitnum - result[i].length;j --){
                 num += result[i][flag] * Math.pow(6,j);
                 flag ++;
             }
 
-            if(freeDiceIndicesValue.length - result[i].length == 0){//没有可活动的骰子了
-                let concatenatedArray = lockedDiceIndicesValue.concat(result[i]);
+            if(freeDiceData.length - result[i].length == 0){//没有可活动的骰子了
+                let concatenatedArray = lockedDiceData.concat(result[i]);
                 let total = getPlayerScoreInfo(concatenatedArray);
                 if(total > expect){
                     expect = total;
                     index = i;
                 }
             }
-            else if(freeDiceIndicesValue.length - result[i].length == 1){//还有一个可活动的骰子
-                let concatenatedArray = lockedDiceIndicesValue.concat(result[i]);
+            else if(freeDiceData.length - result[i].length == 1){//还有一个可活动的骰子
+                let concatenatedArray = lockedDiceData.concat(result[i]);
                 let total = 0;
                 for(let j = 1;j < 7;j ++){
                     let newarr = [...concatenatedArray];
@@ -813,8 +880,8 @@ const genCPUDecision = () => {
                     index = i;
                 }
             }
-            else if(freeDiceIndicesValue.length - result[i].length == 2){//还有两个可活动的骰子
-                let concatenatedArray = lockedDiceIndicesValue.concat(result[i]);
+            else if(freeDiceData.length - result[i].length == 2){//还有两个可活动的骰子
+                let concatenatedArray = lockedDiceData.concat(result[i]);
                 let total = 0;
                 for(let j = 1;j < 7;j ++){//倒数第二位骰子的数值
                     for(let k = 1;k < 7;k ++){//倒数第一位骰子的数值
@@ -830,8 +897,8 @@ const genCPUDecision = () => {
                     index = i;
                 }
             }
-            else if(freeDiceIndicesValue.length - result[i].length == 3){//还有三个可活动的骰子
-                let concatenatedArray = lockedDiceIndicesValue.concat(result[i]);
+            else if(freeDiceData.length - result[i].length == 3){//还有三个可活动的骰子
+                let concatenatedArray = lockedDiceData.concat(result[i]);
                 let total = 0;
                 for(let j = 1;j < 7;j ++){//倒数第三位骰子的数值
                     for(let k = 1;k < 7;k ++){//倒数第二位骰子的数值
@@ -850,8 +917,8 @@ const genCPUDecision = () => {
                     index = i;
                 }
             }
-            else if(freeDiceIndicesValue.length - result[i].length == 4){//还有四个可活动的骰子
-                let concatenatedArray = lockedDiceIndicesValue.concat(result[i]);
+            else if(freeDiceData.length - result[i].length == 4){//还有四个可活动的骰子
+                let concatenatedArray = lockedDiceData.concat(result[i]);
                 let total = 0;
                 for(let j = 1;j < 7;j ++){//倒数第四位骰子的数值
                     for(let k = 1;k < 7;k ++){//倒数第三位骰子的数值
@@ -884,7 +951,7 @@ const genCPUDecision = () => {
         // console.log(result[index]);//输出要锁定的骰子
         let bitmap = 0;
         let diceTypeNum = [0,0,0,0,0,0,0];//用于记录每种骰子的数量
-        let concatenatedArray = lockedDiceIndicesValue.concat(result[index]);
+        let concatenatedArray = lockedDiceData.concat(result[index]);
         concatenatedArray.sort();
         for(let i = 0;i < concatenatedArray.length;i ++){
             diceTypeNum[concatenatedArray[i]] ++;
