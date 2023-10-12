@@ -9,7 +9,7 @@
       "list": [
         {
           "name": "自定义页面",
-          "pathName": "pages/offline-config/config",
+          "pathName": "pages/rank/rank",
           "query": "",
           "launchMode": "default",
           "scene": null
