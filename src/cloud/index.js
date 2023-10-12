@@ -104,6 +104,31 @@ const UserDB = {
     }
 }
 
+const db = cloud.database({
+    throwOnNotFound: false
+})
+
+const mdb = db.collection('match_db')
+
+const MatchDB = {
+    async findMatch() {
+        let userRecord = await UserDB.getUserInfo()
+        let roomId = await cloud.callFunction({
+            name: 'findMatch',
+            data: {
+                id: userRecord.id,
+                name: userRecord.nickname,
+                avatar: userRecord.avatar
+            }
+        })
+        return roomId
+    },
+    async watchMatchDescriptors() {
+        
+    }
+}
+
 export default {
-    UserDB
+    UserDB,
+    MatchDB
 }

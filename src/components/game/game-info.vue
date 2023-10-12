@@ -1,7 +1,7 @@
 <template>
   <view class="game-info">
     <view class="return-avatar-group">
-      <image class="return-btn" src="../../images/game-control/return-btn.svg" />
+      <image class="return-btn" src="../../images/game-control/return-btn.svg" @tap="emit('tapExit')" />
       <image class="game-avatar" :src="props.avatar" @tap="emit('toggleView')" />
     </view>
     <text class="multiplier-text">当前倍率 : {{ props.multiplier }}</text>
@@ -15,7 +15,7 @@
 <script setup>
 import '../style/game-info.css'
 
-const emit = defineEmits(['toggleView'])
+const emit = defineEmits(['toggleView', 'tapExit'])
 
 const props = defineProps({
   avatar: {

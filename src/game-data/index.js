@@ -76,6 +76,10 @@ class GameData {
             };
             this.playerData.push(playerdata);
         }
+        this.multiplier = 1
+        this.currentGame = 1
+        this.currentRound = 1
+        this.currentPlayerIndex = 0
     }
 
     /**
@@ -146,11 +150,12 @@ class GameData {
         let bonusscore = 0;
         let dicescore = 0;
         let totalscore = 0;
+        let sortedDiceData = [...this.playerData[playerIndex].diceData].sort()
         /**
          * 计算骰子点数和
          */
         for(let i = 0;i < 5;i ++){//骰子点数和
-            dicescore += this.playerData[playerIndex].diceData[i];
+            dicescore += sortedDiceData[i];
         }
 
         /**
@@ -158,7 +163,7 @@ class GameData {
          */
         let diceTypeNum = [0,0,0,0,0,0,0];//用于记录每种骰子的数量
         for(let i = 0;i < 5;i ++){
-            diceTypeNum[this.playerData[playerIndex].diceData[i]] += 1;
+            diceTypeNum[sortedDiceData[i]] += 1;
         }
         let sum1 = 0;//用于判断是否大顺子
         for(let i = 1;i < 6;i ++){
@@ -271,6 +276,7 @@ class GameData {
         let length = this.playerData.length;
         let totalscore = [];//储存每位玩家的分数情况
         for(let i = 0;i < length;i++){
+            this.setLockedBitmap(0, i)
             let scoreinfo = this.getPlayerScoreInfo(i);
             totalscore.push(scoreinfo);
         }
@@ -280,7 +286,7 @@ class GameData {
         let chipDifference = [];
         let knockoutPlayerIndex = [];
         let getchips = 0;//最高分玩家赢得的筹码数
-        for(let i = 1;i < length;i ++){//寻找最高分
+        for(let i = 1;i < length;i ++){//寻找最高分，并初始化位图
             if(totalscore[i].totalScore > maxScore){
                 maxScore = totalscore[i].totalScore;
             }
@@ -318,7 +324,7 @@ class GameData {
 
         this.multiplier = 1;
         this.currentRound = 1;
-        this.currentGame ++;
+        this.currentGame  = Math.min(this.games, this.currentGame + 1);
         return {
             topPlayerIndex,
             topPlayerData,
@@ -341,6 +347,7 @@ class GameData {
      * @returns {number[]} 投掷结果
      */
     rollDice(rollResult = null, playerIndex = -1) {
+        let freeDiceData = []
         if(rollResult != null && rollResult.length != 5){
             throw new Error("rollResult length error")
         }
@@ -364,10 +371,17 @@ class GameData {
             for(let i = 0;i < 5;i++){
                 if((this.playerData[playerIndex].diceLockedBitmap & (1 << i)) == 0){//未锁定状态
                     this.playerData[playerIndex].diceData[i] = Math.round(Math.random()*5+1);
+                    freeDiceData.push(this.playerData[playerIndex].diceData[i])
                 }
             }
         }
-        this.playerData[playerIndex].diceData.sort();
+        freeDiceData.sort();
+        let fdIndex = 0;
+        for(let i = 0;i < 5;i++){
+            if((this.playerData[playerIndex].diceLockedBitmap & (1 << i)) == 0){//未锁定状态
+                this.playerData[playerIndex].diceData[i] = freeDiceData[fdIndex++];
+            }
+        }
         return [...this.playerData[playerIndex].diceData];
     }
 

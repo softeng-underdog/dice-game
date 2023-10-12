@@ -62,7 +62,7 @@
 .free-area {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     background-color: #FFA318;
     height: 120px;
     border: 5px solid black;
@@ -75,7 +75,7 @@
 .lock-area {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     background-image: url(../../images/game-control/lock-bkg.svg);
     background-repeat: no-repeat;
     background-position: center center;
@@ -91,6 +91,7 @@
 .game-dice {
     width: 100px;
     height: 100px;
+    margin-left: 3%;
 }
 
 .auto-btn {

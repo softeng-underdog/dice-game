@@ -7,9 +7,12 @@ export default {
     'pages/rule/p3',
     'pages/about/about',
     'pages/offline-config/config',
-    'pages/online-config/config',
     'pages/game/game',
-    'pages/game/rank'
+    'pages/game/rank',
+    'pages/check-information/check',
+    'pages/personal-info/personal-info',
+    'pages/rank/rank',
+    'pages/loading/loading'
   ],
   window: {
     backgroundTextStyle: 'light',
