@@ -20,7 +20,7 @@ import GameData from '../game-data'
  * @typedef MatchRecord 对局数据库记录
  * @property {string} id 房间ID
  * @property {gdTypes.PlayerDescriptor[]} descriptors 每个玩家的描述符
- * @property {actTypes.GameAction} action 上一个发生的游戏动作
+ * @property {actTypes.GameAction?} action 上一个发生的游戏动作
  */
 
 export default {}
